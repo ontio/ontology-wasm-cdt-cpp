@@ -1,0 +1,3 @@
+[submodule "ontdtcC_llvm"]
+	path = ontdtcC_llvm
+	url = https://github.com/ontio/llvm
