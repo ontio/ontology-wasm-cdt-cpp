@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+import subprocess
+import sys
+import uuid
+
+print_help = False
+compile_lib = False
+target_isuser_define = False
+common_option = ["--target=wasm32", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics"]
+wasmvm_service = ["malloc", "ONT_JsonMashalResult", "memset", "memcpy"]
+
+
+def run_bashcmd(cmd):
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for line in p.stdout.readlines():
+        print(line.decode("utf-8"), end='')
+
+
+def compileWasm(options_for_clang):
+    uuid_str = (uuid.uuid4())
+    tmp_file_name = '/tmp/tmpfile_###%s.txt' % uuid_str
+
+    with open(tmp_file_name, 'w+') as out_file:
+        for symbol in wasmvm_service:
+            out_file.write(symbol + '\n')
+
+    undefined_symbol_option = '-Xlinker --allow-undefined-file="%s"' % tmp_file_name
+
+    if not (compile_lib or print_help):
+        cmd = "clang" + ' ' + options_for_clang + ' ' + "-Xlinker --entry=invoke" + ' ' + undefined_symbol_option
+    else:
+        cmd = "clang" + ' ' + options_for_clang
+
+    run_bashcmd(cmd)
+    run_bashcmd('rm %s' % tmp_file_name)
+
+
+if __name__ == '__main__':
+    argv_for_clang = sys.argv[1:]
+    options_for_clang = ''
+
+    for option in argv_for_clang:
+        if option not in common_option:
+            options_for_clang += ' ' + option
+
+        if option == '-h':
+            print_help = True
+        elif option == '-c':
+            compile_lib = True
+
+    if options_for_clang == '':
+        raise Exception("error: no input files")
+
+    if not print_help:
+        for option in common_option:
+            options_for_clang += ' ' + option
+
+    compileWasm(options_for_clang)
