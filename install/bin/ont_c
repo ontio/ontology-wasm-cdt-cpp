@@ -7,7 +7,7 @@ print_help = False
 compile_lib = False
 target_isuser_define = False
 common_option = ["--target=wasm32", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics"]
-wasmvm_service = ["malloc", "ONT_JsonMashalResult", "memset", "memcpy"]
+wasmvm_service = ["ONT_JsonMashalResult"]
 
 
 def run_bashcmd(cmd):
