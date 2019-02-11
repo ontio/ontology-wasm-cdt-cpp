@@ -3,8 +3,8 @@
 
 int invoke()
 {
-	int *ptr = (int *)malloc(8 * sizeof(int));
-	ptr[7] = 9;
-	memset(ptr, 0 ,8*sizeof(int));
+	char *ptr = (char *)malloc(8 * sizeof(char));
+	ptr[7] = '9';
+	memset(ptr, '3' ,8*sizeof(char));
 	return ptr[7];
 }
