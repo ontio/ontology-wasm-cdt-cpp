@@ -49,5 +49,9 @@ add_library(c
 
 target_include_directories(c 
                            PUBLIC 
-                           "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/musl/include;${CMAKE_CURRENT_SOURCE_DIR}/../ontologylib/include;${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal;${CMAKE_CURRENT_SOURCE_DIR}/musl/src/crypt;${CMAKE_CURRENT_SOURCE_DIR}/musl/arch/ont;${CMAKE_CURRENT_SOURCE_DIR}/../>"
-                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_FULL_INCLUDEDIR}>)
+                           ${CMAKE_CURRENT_SOURCE_DIR}/musl/include
+                           ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal
+                           ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/crypt
+                           ${CMAKE_CURRENT_SOURCE_DIR}/musl/arch/ont
+			   ${CMAKE_CURRENT_SOURCE_DIR}/../ontologylib/include
+                           ${CMAKE_SOURCE_DIR})
