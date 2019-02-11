@@ -6,7 +6,7 @@ import uuid
 print_help = False
 compile_lib = False
 target_isuser_define = False
-common_option = ["--target=wasm32", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics"]
+common_option = ["--target=wasm32", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics", "-nostdinc", "-static"]
 wasmvm_service = ["ONT_JsonMashalResult"]
 
 
