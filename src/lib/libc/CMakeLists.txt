@@ -55,3 +55,9 @@ target_include_directories(c
                            ${CMAKE_CURRENT_SOURCE_DIR}/musl/arch/ont
 			   ${CMAKE_CURRENT_SOURCE_DIR}/../ontologylib/include
                            ${CMAKE_SOURCE_DIR})
+
+if(DEFINED BASE_BINARY_DIR)
+	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/musl/include/ DESTINATION ${BASE_BINARY_DIR}/include/libc/)
+	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/ DESTINATION ${BASE_BINARY_DIR}/include/libc/)
+	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/musl/arch/ont/ DESTINATION ${BASE_BINARY_DIR}/include/libc/)
+endif()
