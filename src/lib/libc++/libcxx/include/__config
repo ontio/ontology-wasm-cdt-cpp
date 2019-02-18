@@ -19,7 +19,9 @@
 #define _LIBCPP_HAS_MUSL_LIBC
 
 // XXX
+#ifndef __ELF__
 #define __ELF__
+#endif
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
