@@ -1,10 +1,10 @@
 #pragma once
 
 /**
- * Define specific things for the eosio system
+ * Define specific things for the ont system
  */
 
 extern "C" {
-   void eosio_assert(unsigned int, const char*);
-   void __cxa_pure_virtual() { eosio_assert(false, "pure virtual method called"); }
+   void ont_assert(unsigned int, const char*);
+   void __cxa_pure_virtual() { ont_assert(false, "pure virtual method called"); }
 }
