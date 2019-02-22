@@ -1,4 +1,4 @@
 #pragma once
 
-typedef unsigned int size_t;
-typedef int ptrdiff_t; //XXX intptr_t
+typedef unsigned long size_t;
+typedef long ptrdiff_t; //XXX intptr_t
