@@ -10,6 +10,7 @@
 
 #ifndef _LIBCPP_OSTREAM
 #define _LIBCPP_OSTREAM
+#include<remove_wasm_float>
 
 /*
     ostream synopsis
@@ -52,9 +53,11 @@ public:
     basic_ostream& operator<<(unsigned long n);
     basic_ostream& operator<<(long long n);
     basic_ostream& operator<<(unsigned long long n);
+#if defined(WASM_FLOAT_SUPPORT)
     basic_ostream& operator<<(float f);
     basic_ostream& operator<<(double f);
     basic_ostream& operator<<(long double f);
+#endif  // WASM_FLOAT_SUPPORT
     basic_ostream& operator<<(const void* p);
     basic_ostream& operator<<(basic_streambuf<char_type,traits>* sb);
 
@@ -212,9 +215,11 @@ public:
     basic_ostream& operator<<(unsigned long __n);
     basic_ostream& operator<<(long long __n);
     basic_ostream& operator<<(unsigned long long __n);
+#if defined(WASM_FLOAT_SUPPORT)
     basic_ostream& operator<<(float __f);
     basic_ostream& operator<<(double __f);
     basic_ostream& operator<<(long double __f);
+#endif  // WASM_FLOAT_SUPPORT
     basic_ostream& operator<<(const void* __p);
     basic_ostream& operator<<(basic_streambuf<char_type, traits_type>* __sb);
 
@@ -605,6 +610,7 @@ basic_ostream<_CharT, _Traits>::operator<<(unsigned long long __n)
     return *this;
 }
 
+#if defined(WASM_FLOAT_SUPPORT)
 template <class _CharT, class _Traits>
 basic_ostream<_CharT, _Traits>&
 basic_ostream<_CharT, _Traits>::operator<<(float __n)
@@ -682,6 +688,7 @@ basic_ostream<_CharT, _Traits>::operator<<(long double __n)
 #endif  // _LIBCPP_NO_EXCEPTIONS
     return *this;
 }
+#endif  // WASM_FLOAT_SUPPORT
 
 template <class _CharT, class _Traits>
 basic_ostream<_CharT, _Traits>&

@@ -11,6 +11,7 @@
 #ifndef _LIBCPP_IOSTREAM
 #define _LIBCPP_IOSTREAM
 //#error "iostreams currently clash with ont::datastream"
+#include<remove_wasm_float>
 /*
     iostream synopsis
 

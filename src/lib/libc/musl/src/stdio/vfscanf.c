@@ -11,6 +11,7 @@
 #include "shgetc.h"
 #include "intscan.h"
 #include "floatscan.h"
+#include<remove_wasm_float>
 
 #define SIZE_hh -2
 #define SIZE_h  -1
@@ -18,6 +19,7 @@
 #define SIZE_l   1
 #define SIZE_L   2
 #define SIZE_ll  3
+//#define WASM_FLOAT_SUPPORT
 
 static void store_int(void *dest, int size, unsigned long long i)
 {
@@ -68,7 +70,9 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 	int invert;
 	int matches=0;
 	unsigned long long x;
+#if defined(WASM_FLOAT_SUPPORT)
 	long double y;
+#endif  // WASM_FLOAT_SUPPORT
 	off_t pos = 0;
 	unsigned char scanset[257];
 	size_t i, k;
@@ -295,6 +299,7 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 			if (t=='p' && dest) *(void **)dest = (void *)(uintptr_t)x;
 			else store_int(dest, size, x);
 			break;
+#if defined(WASM_FLOAT_SUPPORT)
 		case 'a': case 'A':
 		case 'e': case 'E':
 		case 'f': case 'F':
@@ -313,6 +318,7 @@ int vfscanf(FILE *restrict f, const char *restrict fmt, va_list ap)
 				break;
 			}
 			break;
+#endif  // WASM_FLOAT_SUPPORT
 		}
 
 		pos += shcnt(f);
