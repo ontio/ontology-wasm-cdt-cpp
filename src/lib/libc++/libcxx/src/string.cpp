@@ -14,6 +14,7 @@
 #include "limits"
 #include "stdexcept"
 #include <stdio.h>
+#include <remove_wasm_float>
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
@@ -170,6 +171,7 @@ as_integer( const string& func, const wstring& s, size_t* idx, int base )
     return as_integer_helper<unsigned long long>( func, s, idx, base, wcstoull );
 }
 
+#if defined(WASM_FLOAT_SUPPORT)
 // as_float
 
 template<typename V, typename S, typename F> 
@@ -243,6 +245,7 @@ as_float( const string& func, const wstring& s, size_t* idx )
 {
     return as_float_helper<long double>( func, s, idx, wcstold );
 }
+#endif //WASM_FLOAT_SUPPORT
 
 }  // unnamed namespace
 
@@ -306,6 +309,7 @@ stoull(const wstring& str, size_t* idx, int base)
     return as_integer<unsigned long long>( "stoull", str, idx, base );
 }
 
+#if defined(WASM_FLOAT_SUPPORT)
 float
 stof(const string& str, size_t* idx)
 {
@@ -341,6 +345,7 @@ stold(const wstring& str, size_t* idx)
 {
     return as_float<long double>( "stold", str, idx );
 }
+#endif //WASM_FLOAT_SUPPORT
 
 // to_string
 
@@ -463,6 +468,7 @@ string to_string(unsigned long long val)
     return as_string(snprintf, initial_string<string, unsigned long long>()(), "%llu", val);
 }
 
+#if defined(WASM_FLOAT_SUPPORT)
 string to_string(float val)
 {
     return as_string(snprintf, initial_string<string, float>()(), "%f", val);
@@ -477,6 +483,7 @@ string to_string(long double val)
 {
     return as_string(snprintf, initial_string<string, long double>()(), "%Lf", val);
 }
+#endif //WASM_FLOAT_SUPPORT
 
 wstring to_wstring(int val)
 {
@@ -508,6 +515,7 @@ wstring to_wstring(unsigned long long val)
     return as_string(get_swprintf(), initial_string<wstring, unsigned long long>()(), L"%llu", val);
 }
 
+#if defined(WASM_FLOAT_SUPPORT)
 wstring to_wstring(float val)
 {
     return as_string(get_swprintf(), initial_string<wstring, float>()(), L"%f", val);
@@ -522,4 +530,5 @@ wstring to_wstring(long double val)
 {
     return as_string(get_swprintf(), initial_string<wstring, long double>()(), L"%Lf", val);
 }
+#endif //WASM_FLOAT_SUPPORT
 _LIBCPP_END_NAMESPACE_STD

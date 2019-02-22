@@ -35,6 +35,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
+#include<remove_wasm_float>
 
 
 // ntoa conversion buffer size, this must be big enough to hold
@@ -48,7 +49,7 @@
 #define PRINTF_FTOA_BUFFER_SIZE    32U
 
 // define this to support floating point (%f)
-#define PRINTF_SUPPORT_FLOAT
+//#define WASM_FLOAT_SUPPORT
 
 // define this to support long long types (%llu or %p)
 #define PRINTF_SUPPORT_LONG_LONG
@@ -276,8 +277,7 @@ static size_t _ntoa_long_long(out_fct_type out, char* buffer, size_t idx, size_t
 }
 #endif  // PRINTF_SUPPORT_LONG_LONG
 
-
-#if defined(PRINTF_SUPPORT_FLOAT)
+#if defined(WASM_FLOAT_SUPPORT)
 static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, double value, unsigned int prec, unsigned int width, unsigned int flags)
 {
   const size_t start_idx = idx;
@@ -415,7 +415,7 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
 
   return idx;
 }
-#endif  // PRINTF_SUPPORT_FLOAT
+#endif  // WASM_FLOAT_SUPPORT
 
 
 // internal vsnprintf
@@ -599,13 +599,13 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
         format++;
         break;
       }
-#if defined(PRINTF_SUPPORT_FLOAT)
+#if defined(WASM_FLOAT_SUPPORT)
       case 'f' :
       case 'F' :
         idx = _ftoa(out, buffer, idx, maxlen, va_arg(va, double), precision, width, flags);
         format++;
         break;
-#endif  // PRINTF_SUPPORT_FLOAT
+#endif  // WASM_FLOAT_SUPPORT
       case 'c' : {
         unsigned int l = 1U;
         // pre padding

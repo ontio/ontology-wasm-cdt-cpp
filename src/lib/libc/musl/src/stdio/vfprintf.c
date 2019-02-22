@@ -9,6 +9,8 @@
 #include <inttypes.h>
 #include <math.h>
 #include <float.h>
+#include<remove_wasm_float>
+//#define WASM_FLOAT_SUPPORT
 
 /* Some useful macros */
 
@@ -101,7 +103,9 @@ static const unsigned char states[]['z'-'A'+1] = {
 union arg
 {
 	uintmax_t i;
+#if defined(WASM_FLOAT_SUPPORT)
 	long double f;
+#endif  // WASM_FLOAT_SUPPORT
 	void *p;
 };
 
@@ -124,8 +128,10 @@ static void pop_arg(union arg *arg, int type, va_list *ap)
 	break; case UMAX:	arg->i = va_arg(*ap, uintmax_t);
 	break; case PDIFF:	arg->i = va_arg(*ap, ptrdiff_t);
 	break; case UIPTR:	arg->i = (uintptr_t)va_arg(*ap, void *);
+#if defined(WASM_FLOAT_SUPPORT)
 	break; case DBL:	arg->f = va_arg(*ap, double);
 	break; case LDBL:	arg->f = va_arg(*ap, long double);
+#endif  // WASM_FLOAT_SUPPORT
 	}
 }
 
@@ -169,6 +175,7 @@ static char *fmt_u(uintmax_t x, char *s)
 	return s;
 }
 
+#if defined(WASM_FLOAT_SUPPORT)
 /* Do not override this check. The floating point printing code below
  * depends on the float.h constants being right. If they are wrong, it
  * may overflow the stack. */
@@ -415,6 +422,7 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 
 	return MAX(w, pl+l);
 }
+#endif  // WASM_FLOAT_SUPPORT
 
 static int getint(char **s) {
 	int i;
@@ -612,12 +620,14 @@ static int printf_core(FILE *f, const char *fmt, va_list *ap, union arg *nl_arg,
 			pad(f, ' ', w, p, fl^LEFT_ADJ);
 			l = w>p ? w : p;
 			continue;
+#if defined(WASM_FLOAT_SUPPORT)
 		case 'e': case 'f': case 'g': case 'a':
 		case 'E': case 'F': case 'G': case 'A':
 			if (xp && p<0) goto overflow;
 			l = fmt_fp(f, arg.f, w, p, fl, t);
 			if (l<0) goto overflow;
 			continue;
+#endif  // WASM_FLOAT_SUPPORT
 		}
 
 		if (p < z-a) p = z-a;
