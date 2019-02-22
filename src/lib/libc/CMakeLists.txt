@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(ontology_libraries)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-everything --target=wasm32 -nostdlib -fno-builtin -ffreestanding  -fno-threadsafe-statics  -O3")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-everything --target=wasm32 -nostdlib -fno-builtin -ffreestanding -nostdinc  -nostdlibinc -fno-threadsafe-statics  -O3")
 
 file(GLOB CRYPT_SOURCES  "musl/src/crypt/*.c")
 file(GLOB CTYPE_SOURCES  "musl/src/ctype/*.c")
