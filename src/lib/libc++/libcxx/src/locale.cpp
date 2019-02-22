@@ -44,9 +44,9 @@
 #pragma clang diagnostic ignored "-Wsign-conversion"
 #endif
 
-extern "C" void ont_assert(bool, const char*);
-size_t strftime(char*, size_t, const char*, const struct tm*) { ont_assert(false, "strftime called"); }
-size_t strftime_l(char*, size_t, const char*, const struct tm*, locale_t) { ont_assert(false, "strftime_l called"); }
+extern "C" void ont_assert(bool, const char*, unsigned int);
+size_t strftime(char*, size_t, const char*, const struct tm*) { ont_assert(false, "strftime called",16 ); }
+size_t strftime_l(char*, size_t, const char*, const struct tm*, locale_t) { ont_assert(false, "strftime_l called", 18); }
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
