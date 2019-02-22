@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(ontology_libc++)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-everything --target=wasm32 -nostdlib -fno-builtin -ffreestanding  -fno-threadsafe-statics      -O3" -v)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-everything --target=wasm32 -nostdlib -fno-builtin -ffreestanding  -fno-threadsafe-statics  -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wno-everything --target=wasm32 -nostdlib -fno-builtin -ffreestanding  -fno-threadsafe-statics  -O3  -fno-rtti -fno-exceptions")
 
 SET(SRC_FILENAMES algorithm.cpp any.cpp bind.cpp condition_variable.cpp functional.cpp
                   future.cpp ios.cpp iostream.cpp locale.cpp memory.cpp mutex.cpp new.cpp optional.cpp
@@ -24,3 +25,4 @@ target_include_directories(c++
                            ${CMAKE_SOURCE_DIR}/../libc/musl/include)
 
 target_link_libraries(c++ c)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/libcxx/include/ DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../install/include/libcxx)
