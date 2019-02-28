@@ -71,7 +71,7 @@ namespace ontio {
       uint8_t         max_cpu_usage_ms = 0UL; /// number of CPU usage units to bill transaction for
       unsigned_int    delay_sec = 0UL; /// number of seconds to delay transaction, default: 0
 
-      EOSLIB_SERIALIZE( transaction_header, (expiration)(ref_block_num)(ref_block_prefix)(max_net_usage_words)(max_cpu_usage_ms)(delay_sec) )
+      ONTLIB_SERIALIZE( transaction_header, (expiration)(ref_block_num)(ref_block_prefix)(max_net_usage_words)(max_cpu_usage_ms)(delay_sec) )
    };
 
    /**
@@ -105,7 +105,7 @@ namespace ontio {
       std::vector<action>  actions;
       extensions_type      transaction_extensions;
 
-      EOSLIB_SERIALIZE_DERIVED( transaction, transaction_header, (context_free_actions)(actions)(transaction_extensions) )
+      ONTLIB_SERIALIZE_DERIVED( transaction, transaction_header, (context_free_actions)(actions)(transaction_extensions) )
    };
 
    /**
@@ -132,7 +132,7 @@ namespace ontio {
          return unpack<transaction>(sent_trx);
       }
 
-      EOSLIB_SERIALIZE( onerror, (sender_id)(sent_trx) )
+      ONTLIB_SERIALIZE( onerror, (sender_id)(sent_trx) )
    };
 
    /**

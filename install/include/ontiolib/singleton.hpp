@@ -7,7 +7,7 @@ namespace  ontio {
    /**
     *  @defgroup singleton Singleton Table
     *  @ingroup cpp_api
-    *  @brief Defines EOSIO Singleton Table used with %multiindex
+    *  @brief Defines ONTIO Singleton Table used with %multiindex
     *  @{
     */
 
@@ -41,7 +41,7 @@ namespace  ontio {
           */
          uint64_t primary_key() const { return pk_value; }
 
-         EOSLIB_SERIALIZE( row, (value) )
+         ONTLIB_SERIALIZE( row, (value) )
       };
 
       typedef ontio::multi_index<SingletonName, row> table;

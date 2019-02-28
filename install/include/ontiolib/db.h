@@ -10,7 +10,7 @@
  *  @addtogroup database_c_api Database C API
  *  @ingroup c_api
  *  @brief Defines %C APIs for interfacing with the database.
- *  @details Database C API provides low level interface to EOSIO database.
+ *  @details Database C API provides low level interface to ONTIO database.
  *
  *  @section tabletypes Supported Table Types
  *  Following are the table types supported by the C API:

@@ -37,7 +37,7 @@ namespace ontio {
     *    unsigned long long b; //8
     *    int  c; //4
     *
-    *    EOSLIB_SERIALIZE( dummy_action, (a)(b)(c) )
+    *    ONTLIB_SERIALIZE( dummy_action, (a)(b)(c) )
     *  };
     *  dummy_action msg = unpack_action_data<dummy_action>();
     *  @endcode
@@ -144,7 +144,7 @@ namespace ontio {
          return std::tie( a.actor, a.permission ) == std::tie( b.actor, b.permission );
       }
 
-      EOSLIB_SERIALIZE( permission_level, (actor)(permission) )
+      ONTLIB_SERIALIZE( permission_level, (actor)(permission) )
    };
 
    /**
@@ -248,7 +248,7 @@ namespace ontio {
       action( std::vector<permission_level> auths, struct name a, struct name n, T&& value )
       :account(a), name(n), authorization(std::move(auths)), data(pack(std::forward<T>(value))) {}
 
-      EOSLIB_SERIALIZE( action, (account)(name)(authorization)(data) )
+      ONTLIB_SERIALIZE( action, (account)(name)(authorization)(data) )
 
       /**
        * Send the action as inline action

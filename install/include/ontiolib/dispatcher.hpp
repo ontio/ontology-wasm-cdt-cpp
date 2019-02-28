@@ -88,15 +88,15 @@ namespace ontio {
 
 
 
- // Helper macro for EOSIO_DISPATCH_INTERNAL
- #define EOSIO_DISPATCH_INTERNAL( r, OP, elem ) \
+ // Helper macro for ONTIO_DISPATCH_INTERNAL
+ #define ONTIO_DISPATCH_INTERNAL( r, OP, elem ) \
     case ontio::name( BOOST_PP_STRINGIZE(elem) ).value: \
        ontio::execute_action( ontio::name(receiver), ontio::name(code), &OP::elem ); \
        break;
 
- // Helper macro for EOSIO_DISPATCH
- #define EOSIO_DISPATCH_HELPER( TYPE,  MEMBERS ) \
-    BOOST_PP_SEQ_FOR_EACH( EOSIO_DISPATCH_INTERNAL, TYPE, MEMBERS )
+ // Helper macro for ONTIO_DISPATCH
+ #define ONTIO_DISPATCH_HELPER( TYPE,  MEMBERS ) \
+    BOOST_PP_SEQ_FOR_EACH( ONTIO_DISPATCH_INTERNAL, TYPE, MEMBERS )
 
 
 
@@ -110,15 +110,15 @@ namespace ontio {
  *
  * Example:
  * @code
- * EOSIO_DISPATCH( ontio::bios, (setpriv)(setalimits)(setglimits)(setprods)(reqauth) )
+ * ONTIO_DISPATCH( ontio::bios, (setpriv)(setalimits)(setglimits)(setprods)(reqauth) )
  * @endcode
  */
-#define EOSIO_DISPATCH( TYPE, MEMBERS ) \
+#define ONTIO_DISPATCH( TYPE, MEMBERS ) \
 extern "C" { \
    void apply( uint64_t receiver, uint64_t code, uint64_t action ) { \
       if( code == receiver ) { \
          switch( action ) { \
-            EOSIO_DISPATCH_HELPER( TYPE, MEMBERS ) \
+            ONTIO_DISPATCH_HELPER( TYPE, MEMBERS ) \
          } \
          /* does not allow destructor of thiscontract to run: ontio_exit(0); */ \
       } \

@@ -22,8 +22,8 @@ namespace ontio {
    */
 
    /**
-    * EOSIO Public Key
-    * @brief EOSIO Public Key
+    * ONTIO Public Key
+    * @brief ONTIO Public Key
     */
    struct public_key {
       /**
@@ -45,7 +45,7 @@ namespace ontio {
       friend bool operator != ( const public_key& a, const public_key& b ) {
         return std::tie(a.type,a.data) != std::tie(b.type,b.data);
       }
-      EOSLIB_SERIALIZE( public_key, (type)(data) )
+      ONTLIB_SERIALIZE( public_key, (type)(data) )
    };
 
    /// @} publickeytype
@@ -59,8 +59,8 @@ namespace ontio {
    */
 
    /**
-    * EOSIO Signature
-    * @brief EOSIO Signature
+    * ONTIO Signature
+    * @brief ONTIO Signature
     */
    struct signature {
       /**
@@ -82,7 +82,7 @@ namespace ontio {
       friend bool operator != ( const signature& a, const signature& b ) {
         return std::tie(a.type,a.data) != std::tie(b.type,b.data);
       }
-      EOSLIB_SERIALIZE( signature, (type)(data) )
+      ONTLIB_SERIALIZE( signature, (type)(data) )
    };
 
    /// @} signaturetype

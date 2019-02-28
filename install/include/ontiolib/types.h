@@ -33,14 +33,14 @@ extern "C" {
 typedef uint64_t capi_name;
 
 /**
- * EOSIO Public Key. It is 34 bytes.
+ * ONTIO Public Key. It is 34 bytes.
  */
 struct capi_public_key {
    char data[34];
 };
 
 /**
- * EOSIO Signature. It is 66 bytes.
+ * ONTIO Signature. It is 66 bytes.
  */
 struct capi_signature {
    uint8_t data[66];
