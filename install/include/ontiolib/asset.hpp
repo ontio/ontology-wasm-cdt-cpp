@@ -358,7 +358,7 @@ namespace ontio {
          ontio::print(to_string());
       }
 
-      EOSLIB_SERIALIZE( asset, (amount)(symbol) )
+      ONTLIB_SERIALIZE( asset, (amount)(symbol) )
    };
 
   /**
@@ -485,7 +485,7 @@ namespace ontio {
          return a.quantity >= b.quantity;
       }
 
-      EOSLIB_SERIALIZE( extended_asset, (quantity)(contract) )
+      ONTLIB_SERIALIZE( extended_asset, (quantity)(contract) )
    };
 
 /// @} asset type

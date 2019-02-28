@@ -2,7 +2,7 @@
 #include "memory.hpp"
 #include "privileged.hpp"
 
-#ifdef EOSIO_NATIVE
+#ifdef ONTIO_NATIVE
 extern "C" {
    size_t __builtin_wasm_current_memory();
    size_t __builtin_wasm_grow_memory(size_t);

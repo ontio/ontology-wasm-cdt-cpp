@@ -15,7 +15,7 @@ namespace ontio {
    /**
     * @defgroup name
     * @ingroup types
-    * @brief EOSIO Types
+    * @brief ONTIO Types
     * @{
 
     /*
@@ -244,7 +244,7 @@ namespace ontio {
 
       uint64_t value = 0;
 
-      EOSLIB_SERIALIZE( name, (value) )
+      ONTLIB_SERIALIZE( name, (value) )
    };
 
    namespace detail {

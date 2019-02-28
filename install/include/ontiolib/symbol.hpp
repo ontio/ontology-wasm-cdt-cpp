@@ -395,7 +395,7 @@ namespace ontio {
       symbol symbol; ///< the symbol
       name   contract; ///< the token contract hosting the symbol
 
-      EOSLIB_SERIALIZE( extended_symbol, (symbol)(contract) )
+      ONTLIB_SERIALIZE( extended_symbol, (symbol)(contract) )
    };
 
    /// @}

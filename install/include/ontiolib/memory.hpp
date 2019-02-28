@@ -6,7 +6,7 @@
 
 #include "types.h"
 
-#ifdef EOSIO_NATIVE
+#ifdef ONTIO_NATIVE
 extern "C" void* alloca(size_t);
 #endif
 
