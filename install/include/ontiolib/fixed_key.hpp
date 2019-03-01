@@ -46,7 +46,7 @@ namespace ontio {
     *  @tparam Size - Size of the fixed_key object
     */
    template<size_t Size>
-   class [[deprecated("Replaced by fixed_bytes")]] fixed_key {
+   class fixed_key {
       private:
 
          template<bool...> struct bool_pack;

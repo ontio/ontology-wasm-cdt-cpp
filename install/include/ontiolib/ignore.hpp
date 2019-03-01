@@ -10,7 +10,7 @@ namespace ontio {
     * This restriction will be relaxed in a later release.
     */
    template <typename T>
-   struct [[ontio::ignore]] ignore {};
+   struct ignore {};
 
     /**
     * Wrapper class to allow sending inline actions with the correct payload

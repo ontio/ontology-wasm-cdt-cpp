@@ -8,7 +8,7 @@ compile_lib = False
 target_isuser_define = False
 common_option = ["--target=wasm32", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics", "-nostdinc", "-static", "-fno-rtti -fno-exceptions", " -DBOOST_DISABLE_ASSERTS " " -DBOOST_EXCEPTION_DISABLE " "-std=c++17"]
 #wasmvm_service = ["prints_l","ont_assert", "abort", "__extendsftf2", "__floatsitf", "__multf3", "__floatunsitf", "__divtf3", "__extenddftf2", "__addtf3", "__getf2", "__netf2", "__subtf3", "__eqtf2", "__letf2", "__trunctfdf2", "__trunctfsf2", "__unordtf2", "__fixunstfsi", "__fixtfsi"]
-wasmvm_service = ["prints_l", "abort", "ont_assert"]
+wasmvm_service = ["prints_l", "abort", "ont_assert", "save_input_arg", "read_action_data", "action_data_size"]
 
 
 def run_bashcmd(cmd):
