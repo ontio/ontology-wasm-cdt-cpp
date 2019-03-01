@@ -70,7 +70,8 @@ extern "C" {
     *  @pre `msg` is a valid pointer to a range of memory at least `len` bytes long
     *  @post `msg` is filled with packed action data
     */
-   uint32_t read_action_data( void* msg, uint32_t len );
+   void read_action_data( void* msg);
+   void save_input_arg( void* msg, size_t len);
 
    /**
     * Get the length of the current action's data field. This method is useful for dynamically sized actions
@@ -78,7 +79,7 @@ extern "C" {
     * @brief Get the length of current action's data field
     * @return the length of the current action's data field
     */
-   uint32_t action_data_size();
+   uint32_t action_data_size(void);
 
    /**
     *  Add the specified account to set of accounts to be notified

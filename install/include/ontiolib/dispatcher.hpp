@@ -56,7 +56,8 @@ namespace ontio {
     * @return true
     */
    template<typename T, typename... Args>
-   bool execute_action( name self, name code, void (T::*func)(Args...)  ) {
+   bool execute_action( datastream<const char*>& ds, void (T::*func)(Args...)  ) {
+	   /*
       size_t size = action_data_size();
 
       //using malloc/free here potentially is not exception-safe, although WASM doesn't support exceptions
@@ -67,20 +68,24 @@ namespace ontio {
          read_action_data( buffer, size );
       }
 
-      std::tuple<std::decay_t<Args>...> args;
       datastream<const char*> ds((char*)buffer, size);
+      */
+      printf("execute_action\n");
+      std::tuple<std::decay_t<Args>...> args;
       ds >> args;
 
-      T inst(self, code, ds);
+      T inst(ds);
 
       auto f2 = [&]( auto... a ){
          ((&inst)->*func)( a... );
       };
 
       boost::mp11::tuple_apply( f2, args );
+      /*
       if ( max_stack_buffer_size < size ) {
          free(buffer);
       }
+      */
       return true;
    }
 
@@ -91,7 +96,8 @@ namespace ontio {
  // Helper macro for ONTIO_DISPATCH_INTERNAL
  #define ONTIO_DISPATCH_INTERNAL( r, OP, elem ) \
     case ontio::name( BOOST_PP_STRINGIZE(elem) ).value: \
-       ontio::execute_action( ontio::name(receiver), ontio::name(code), &OP::elem ); \
+       printf("case option\n");	\
+       ontio::execute_action( ds, &OP::elem ); \
        break;
 
  // Helper macro for ONTIO_DISPATCH
@@ -115,13 +121,26 @@ namespace ontio {
  */
 #define ONTIO_DISPATCH( TYPE, MEMBERS ) \
 extern "C" { \
-   void apply( uint64_t receiver, uint64_t code, uint64_t action ) { \
-      if( code == receiver ) { \
-         switch( action ) { \
-            ONTIO_DISPATCH_HELPER( TYPE, MEMBERS ) \
-         } \
-         /* does not allow destructor of thiscontract to run: ontio_exit(0); */ \
+   void apply(void) { \
+      uint64_t action; \
+      size_t size = action_data_size(); \
+      constexpr size_t max_stack_buffer_size = 512; \
+      void* buffer = nullptr; \
+      if( size > 0 ) { \
+         buffer = max_stack_buffer_size < size ? malloc(size) : alloca(size); \
+         read_action_data( buffer ); \
       } \
+      datastream<const char*> ds((char*)buffer, size); \
+      ds >> action; \
+      printf("apply\n");	   \
+      printf("%lu\n", action);	   	\
+      switch( action ) { \
+          ONTIO_DISPATCH_HELPER( TYPE, MEMBERS ) \
+      } \
+      if ( max_stack_buffer_size < size ) { \
+         free(buffer); \
+      } \
+      /* does not allow destructor of thiscontract to run: ontio_exit(0); */ \
    } \
 } \
 
