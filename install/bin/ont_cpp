@@ -2,11 +2,14 @@
 import subprocess
 import sys
 import uuid
+import os
 
 print_help = False
 compile_lib = False
 target_isuser_define = False
-common_option = ["--target=wasm32", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics", "-nostdinc", "-static", "-fno-rtti -fno-exceptions", " -DBOOST_DISABLE_ASSERTS " " -DBOOST_EXCEPTION_DISABLE " "-std=c++17"]
+#install_dir = os.getcwd() + "../"
+install_dir = os.path.split(os.path.realpath(__file__))[0] + "/../"
+common_option = ["--target=wasm32", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics", "-nostdinc", "-static", "-fno-rtti -fno-exceptions", "-DBOOST_DISABLE_ASSERTS ", "-DBOOST_EXCEPTION_DISABLE ", "-std=c++17"]
 #wasmvm_service = ["prints_l","ont_assert", "abort", "__extendsftf2", "__floatsitf", "__multf3", "__floatunsitf", "__divtf3", "__extenddftf2", "__addtf3", "__getf2", "__netf2", "__subtf3", "__eqtf2", "__letf2", "__trunctfdf2", "__trunctfsf2", "__unordtf2", "__fixunstfsi", "__fixtfsi"]
 wasmvm_service = ["prints_l", "abort", "ont_assert", "save_input_arg", "read_action_data", "action_data_size"]
 
@@ -31,6 +34,14 @@ def compileWasm(options_for_clang):
         cmd = "clang++" + ' ' + options_for_clang + ' ' + "-Xlinker --entry=invoke" + ' ' + undefined_symbol_option
     else:
         cmd = "clang++" + ' ' + options_for_clang
+
+    cmd += " -I" + install_dir + "include/libcxx "
+    cmd += " -I" + install_dir + "include/libc "
+    cmd += " -I" + install_dir + "include/boost "
+    cmd += " -I" + install_dir + "include/ontiolib"
+    cmd += " -I" + install_dir + "include "
+    cmd += " -L" + install_dir + "lib "
+    cmd += " -lc -lc++ -lmalloc "
 
     run_bashcmd(cmd)
     run_bashcmd('rm %s' % tmp_file_name)
