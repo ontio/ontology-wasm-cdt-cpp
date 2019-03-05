@@ -2,12 +2,13 @@
 import subprocess
 import sys
 import uuid
+import os
 
 print_help = False
 compile_lib = False
-target_isuser_define = False
-common_option = ["--target=wasm32","-msoft-float" , "-nostdlib",  "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics", "-nostdinc", "-static"]
-wasmvm_service = ["prints_l"]
+install_dir = os.path.split(os.path.realpath(__file__))[0] + "/../"
+common_option = ["--target=wasm32", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics", "-nostdinc", "-static", "-Wl,--gc-sections,--merge-data-segments,-zstack-size=8192", "-Wno-unused-command-line-argument"]
+wasmvm_service = ["prints_l", "abort", "ont_assert", "save_input_arg", "read_action_data", "action_data_size"]
 
 
 def run_bashcmd(cmd):
@@ -30,6 +31,17 @@ def compileWasm(options_for_clang):
         cmd = "clang" + ' ' + options_for_clang + ' ' + "-Xlinker --entry=invoke" + ' ' + undefined_symbol_option
     else:
         cmd = "clang" + ' ' + options_for_clang
+
+    if not print_help:
+        cmd += " -I" + install_dir + "include/libcxx "
+        cmd += " -I" + install_dir + "include/libc "
+        cmd += " -I" + install_dir + "include/boost "
+        cmd += " -I" + install_dir + "include/ontiolib"
+        cmd += " -I" + install_dir + "include "
+
+    if not (compile_lib or print_help):
+        cmd += " -L" + install_dir + "lib "
+        cmd += " -lc -lc++ -lmalloc "
 
     run_bashcmd(cmd)
     run_bashcmd('rm %s' % tmp_file_name)
