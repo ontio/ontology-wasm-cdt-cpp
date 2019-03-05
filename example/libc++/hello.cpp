@@ -1,5 +1,5 @@
 #include<stdio.h>
-#include <ontiolib/ontio.hpp>
+#include<ontiolib/ontio.hpp>
 #include<string>
 
 using namespace ontio;
@@ -17,7 +17,11 @@ public:
 	}
 
 	void xiiiiiqicheng(int64_t a) {
-		printf("hello world chenglin_hi 0x%x\n", a);
+		if (a == 0x1234567)
+			printf("hello world chenglin_hi 0x%x\n", a);
+		else{
+			printf("wrong args passed\n");
+		}
 	}
 
 };
@@ -62,9 +66,8 @@ void invoke()
 	datastream<const char*> ds((char*)buffer, size);
 	
 	printf("%x\n", action);
-	ds << action;
+	ds << action << a;
 	//ds << s;
-	ds << a;
 	save_input_arg(buffer, size);
 
 	apply(); //simulation entry call
