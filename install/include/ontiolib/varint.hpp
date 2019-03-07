@@ -191,14 +191,9 @@ struct unsigned_int {
      */
     template<typename DataStream>
     friend DataStream& operator << ( DataStream& ds, const unsigned_int& v ){
-       uint64_t val = v.value;
-       do {
-          uint8_t b = uint8_t(val) & 0x7f;
-          val >>= 7;
-          b |= ((val > 0) << 7);
-          ds.write((char*)&b,1);//.put(b);
-       } while( val );
-       return ds;
+	uint64_t val = v.value;
+        WriteVarUint(ds, val);
+	return ds;
     }
 
     /**
@@ -211,14 +206,9 @@ struct unsigned_int {
      */
     template<typename DataStream>
     friend DataStream& operator >> ( DataStream& ds, unsigned_int& vi ){
-      uint64_t v = 0; char b = 0; uint8_t by = 0;
-      do {
-         ds.get(b);
-         v |= uint32_t(uint8_t(b) & 0x7f) << by;
-         by += 7;
-      } while( uint8_t(b) & 0x80 );
-      vi.value = static_cast<uint32_t>(v);
-      return ds;
+	uint64_t val = ReadVarUint(ds); 
+	vi.value = uint32_t(val);
+	return ds;
     }
 };
 

@@ -95,8 +95,7 @@ namespace ontio {
 
  // Helper macro for ONTIO_DISPATCH_INTERNAL
  #define ONTIO_DISPATCH_INTERNAL( r, OP, elem ) \
-    case ontio::name( BOOST_PP_STRINGIZE(elem) ).value: \
-       printf("case option\n");	\
+   case ontio::name( BOOST_PP_STRINGIZE(elem)  ).value: \
        ontio::execute_action( ds, &OP::elem ); \
        break;
 
@@ -122,7 +121,7 @@ namespace ontio {
 #define ONTIO_DISPATCH( TYPE, MEMBERS ) \
 extern "C" { \
    void apply(void) { \
-      uint64_t action; \
+      std::string method; \
       size_t size = action_data_size(); \
       constexpr size_t max_stack_buffer_size = 512; \
       void* buffer = nullptr; \
@@ -131,9 +130,10 @@ extern "C" { \
          read_action_data( buffer ); \
       } \
       datastream<const char*> ds((char*)buffer, size); \
-      ds >> action; \
-      printf("apply\n");	   \
-      printf("%lu\n", action);	   	\
+      ds >> method; \
+      printf("method %s\n", method.c_str());	   	\
+      std::string method_t; 	\
+      uint64_t action = ontio::name(method).value; 	\
       switch( action ) { \
           ONTIO_DISPATCH_HELPER( TYPE, MEMBERS ) \
       } \

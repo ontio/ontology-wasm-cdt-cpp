@@ -7,6 +7,7 @@
 #include "print.hpp"
 #include "dispatcher.hpp"
 #include "contract.hpp"
+#include "address.hpp"
 
 #ifndef ONTIO_NATIVE
 static_assert( sizeof(long) == sizeof(int), "unexpected size difference" );
