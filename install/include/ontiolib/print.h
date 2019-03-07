@@ -39,10 +39,10 @@ extern "C" {
     *  Example:
   *
     *  @code
-    *  prints_l("Hello World!", 5); // Output: Hello
+    *  Debug("Hello World!", 5); // Output: Hello
     *  @endcode
     */
-   void prints_l( const char* cstr, uint32_t len);
+   void Debug( const char* cstr, uint32_t len);
 
    /**
     * Prints value as a 64 bit signed integer

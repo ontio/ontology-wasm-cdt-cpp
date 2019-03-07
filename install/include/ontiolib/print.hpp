@@ -57,7 +57,7 @@ namespace ontio {
       if constexpr(std::is_same<T, int128_t>::value)
          printi128(&num);
       else if constexpr(std::is_same<T, char>::value)
-         prints_l( &num, 1 );
+         Debug( &num, 1 );
       else
          printi(num);
    }
@@ -140,7 +140,7 @@ namespace ontio {
       char buffer[7];
       auto end = sym_code.write_as_string( buffer, buffer + sizeof(buffer) );
       if( buffer < end )
-         prints_l( buffer, (end-buffer) );
+         Debug( buffer, (end-buffer) );
    }
 
   /**
@@ -152,7 +152,7 @@ namespace ontio {
    template<typename T, std::enable_if_t<!std::is_integral<std::decay_t<T>>::value, int> = 0>
    inline void print( T&& t ) {
       if constexpr (std::is_same<std::decay_t<T>, std::string>::value)
-         prints_l( t.c_str(), t.size() );
+         Debug( t.c_str(), t.size() );
       else if constexpr (std::is_same<std::decay_t<T>, char*>::value)
          prints(t);
       else
@@ -190,7 +190,7 @@ namespace ontio {
             print_f( s+1, rest... );
             return;
          }
-         prints_l( s, 1 );
+         Debug( s, 1 );
          s++;
       }
    }
