@@ -8,7 +8,7 @@ print_help = False
 compile_lib = False
 install_dir = os.path.split(os.path.realpath(__file__))[0] + "/../"
 common_option = ["--target=wasm32", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics", "-nostdinc", "-static", "-Wl,--gc-sections,--merge-data-segments,-zstack-size=8192", "-Wno-unused-command-line-argument"]
-wasmvm_service = ["prints_l", "abort", "ont_assert", "save_input_arg", "read_action_data", "action_data_size"]
+wasmvm_service = ["Debug", "abort", "ont_assert", "save_input_arg", "read_action_data", "action_data_size"]
 
 
 def run_bashcmd(cmd):

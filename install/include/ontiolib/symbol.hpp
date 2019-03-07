@@ -275,7 +275,7 @@ namespace ontio {
          char buffer[7];
          auto end = code().write_as_string( buffer, buffer + sizeof(buffer) );
          if( buffer < end )
-            prints_l( buffer, (end-buffer) );
+            Debug( buffer, (end-buffer) );
       }
 
       /**
