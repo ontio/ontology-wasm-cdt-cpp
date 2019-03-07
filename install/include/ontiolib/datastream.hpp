@@ -1477,6 +1477,45 @@ inline datastream<Stream>& operator>>(datastream<Stream>& ds, capi_checksum512& 
    return ds;
 }
 
+template<typename Stream>
+inline void WriteVarUint( datastream<Stream>& ds, uint64_t & v ) {
+	if (v < 0xFD){
+		uint8_t t = uint8_t(v);
+		ds << t;
+	} else if (v <= 0xFFFF) {
+		uint16_t t = uint16_t(v);
+		ds.put(0xFD);
+		ds << t;
+	} else if (v <= 0xFFFFFFFF) {
+		uint32_t t = uint32_t(v);
+		ds.put(0xFE);
+		ds<<t;
+	} else {
+		ds.put(0xFF);
+		ds<<v;
+	}
+}
 
+template<typename Stream>
+inline uint64_t ReadVarUint( datastream<Stream>& ds) {
+	uint8_t t; 
+	uint64_t res;
+	ds.get(t);
+
+	if (t == 0xFD){
+		uint16_t res_t ;
+		ds >> res_t;
+		res = uint64_t(res_t);
+	} else if (t == 0xFE) {
+		uint32_t res_t ;
+		ds >> res_t;
+		res = uint64_t(res_t);
+	} else if (t == 0xFF) {
+		ds >> res;
+	} else {
+		res = uint64_t(t);
+	}
+   return res;
+}
 
 }

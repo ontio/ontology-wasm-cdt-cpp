@@ -6,9 +6,7 @@
 
 #include "types.h"
 
-#ifdef ONTIO_NATIVE
 extern "C" void* alloca(size_t);
-#endif
 
 void* sbrk(size_t num_bytes);
 

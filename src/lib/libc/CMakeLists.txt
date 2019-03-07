@@ -45,6 +45,7 @@ add_library(c
             ${THREAD_SOURCES}
             "musl/src/malloc/posix_memalign.c"
             "musl/src/malloc/memalign.c"
+	    "musl/src/ontio/ontio.cpp"
             ${HEADERS})
 
 target_include_directories(c 
@@ -56,8 +57,6 @@ target_include_directories(c
 			   ${CMAKE_CURRENT_SOURCE_DIR}/../ontologylib/include
                            ${CMAKE_SOURCE_DIR})
 
-if(DEFINED BASE_BINARY_DIR)
-	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/musl/include/ DESTINATION ${BASE_BINARY_DIR}/include/libc/)
-	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/ DESTINATION ${BASE_BINARY_DIR}/include/libc/)
-	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/musl/arch/ont/ DESTINATION ${BASE_BINARY_DIR}/include/libc/)
-endif()
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/musl/include/ DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../install/include/libc/)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal/ DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../install/include/libc/)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/musl/arch/ont/ DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../install/include/libc/)
