@@ -65,7 +65,7 @@ namespace ontio {
       void* buffer = nullptr;
       if( size > 0 ) {
          buffer = max_stack_buffer_size < size ? malloc(size) : alloca(size);
-         read_action_data( buffer, size );
+         GetInput( buffer, size );
       }
 
       datastream<const char*> ds((char*)buffer, size);
@@ -127,7 +127,7 @@ extern "C" { \
       void* buffer = nullptr; \
       if( size > 0 ) { \
          buffer = max_stack_buffer_size < size ? malloc(size) : alloca(size); \
-         read_action_data( buffer ); \
+         GetInput( buffer ); \
       } \
       datastream<const char*> ds((char*)buffer, size); \
       ds >> method; \

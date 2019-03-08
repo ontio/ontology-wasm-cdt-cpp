@@ -70,7 +70,7 @@ extern "C" {
     *  @pre `msg` is a valid pointer to a range of memory at least `len` bytes long
     *  @post `msg` is filled with packed action data
     */
-   void read_action_data( void* msg);
+   void GetInput( void* msg);
    void save_input_arg( void* msg, size_t len);
 
    /**

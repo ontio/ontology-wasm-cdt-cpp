@@ -48,7 +48,7 @@ namespace ontio {
       constexpr size_t max_stack_buffer_size = 512;
       size_t size = action_data_size();
       char* buffer = (char*)( max_stack_buffer_size < size ? malloc(size) : alloca(size) );
-      read_action_data( buffer );
+      GetInput( buffer );
       return unpack<T>( buffer, size );
    }
 
