@@ -70,7 +70,7 @@ extern "C" {
     *  @pre `msg` is a valid pointer to a range of memory at least `len` bytes long
     *  @post `msg` is filled with packed action data
     */
-   void GetInput( void* msg);
+   void get_input( void* msg);
    void save_input_arg( void* msg, size_t len);
 
    /**
@@ -79,7 +79,7 @@ extern "C" {
     * @brief Get the length of current action's data field
     * @return the length of the current action's data field
     */
-   uint32_t InputLength(void);
+   uint32_t input_length(void);
 
    /**
     *  Add the specified account to set of accounts to be notified

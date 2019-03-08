@@ -11,17 +11,17 @@ class Address {
 
     template<typename DataStream>
     friend DataStream& operator<<( DataStream& ds, const Address & v ) {
-	unsigned_int t = 20;
-	ds << t;
+	//unsigned_int t = 20;
+	//ds << t;
 	ds << v.bytes;
 	return ds;
     }
 
     template<typename DataStream>
     friend DataStream& operator>>( DataStream& ds, Address & v ) {
-	unsigned_int t;
-	ds >> t;
-	ontio_assert(t.value == 20, "Deserialize error. addr len must be 20 bytes.");
+	//unsigned_int t;
+	//ds >> t;
+	//ontio_assert(t.value == 20, "Deserialize error. addr len must be 20 bytes.");
 	ds >> v.bytes;
 	return ds;
     }
@@ -39,9 +39,13 @@ class NativeArg {
     template<typename DataStream> 
     friend DataStream& operator << ( DataStream& ds, const NativeArg& t ) { 
 	unsigned_int s = pack_size(t.value);
+	unsigned_int addr_len = 20;
+
     	ds << t.version;
   	ds << t.method;
+	ds << addr_len;
         ds << t.from;
+	ds << addr_len;
 	ds << t.to; 
 	ds << s;
 	ds << t.value; 
@@ -53,7 +57,11 @@ class NativeArg {
 	unsigned_int s;
 	ds >> t.version; 
 	ds >> t.method; 
+	ds >> s;
+	ontio_assert(s.value == 20, "Deserialize error. addr len must be 20 bytes.");
 	ds >> t.from;
+	ds >> s;
+	ontio_assert(s.value == 20, "Deserialize error. addr len must be 20 bytes.");
 	ds >> t.to; 
 	ds >> s;
 	ds >> t.value; 

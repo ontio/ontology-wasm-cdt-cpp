@@ -101,9 +101,9 @@ static inline void _out_null(char character, void* buffer, size_t idx, size_t ma
   (void)character; (void)buffer; (void)idx; (void)maxlen;
 }
 
-extern void Debug(const char*, size_t);
+extern void debug(const char*, size_t);
 void _putchar(char c) {
-   Debug(&c, 1);
+   debug(&c, 1);
 }
 
 // internal _putchar wrapper

@@ -4,7 +4,7 @@
 
 size_t __stdio_write(FILE *f, const unsigned char *buf, size_t len)
 {
-   Debug((char*)(f->wbase), f->wpos-f->wbase);
-   Debug((void*)buf, len);
+   debug((char*)(f->wbase), f->wpos-f->wbase);
+   debug((void*)buf, len);
    return f->wpos-f->wbase + len;
 }

@@ -46,9 +46,9 @@ namespace ontio {
    template<typename T>
    T unpack_action_data() {
       constexpr size_t max_stack_buffer_size = 512;
-      size_t size = InputLength();
+      size_t size = input_length();
       char* buffer = (char*)( max_stack_buffer_size < size ? malloc(size) : alloca(size) );
-      GetInput( buffer );
+      get_input( buffer );
       return unpack<T>( buffer, size );
    }
 
