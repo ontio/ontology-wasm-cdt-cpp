@@ -58,14 +58,14 @@ namespace ontio {
    template<typename T, typename... Args>
    bool execute_action( datastream<const char*>& ds, void (T::*func)(Args...)  ) {
 	   /*
-      size_t size = InputLength();
+      size_t size = input_length();
 
       //using malloc/free here potentially is not exception-safe, although WASM doesn't support exceptions
       constexpr size_t max_stack_buffer_size = 512;
       void* buffer = nullptr;
       if( size > 0 ) {
          buffer = max_stack_buffer_size < size ? malloc(size) : alloca(size);
-         GetInput( buffer, size );
+         get_input( buffer, size );
       }
 
       datastream<const char*> ds((char*)buffer, size);
@@ -118,16 +118,17 @@ namespace ontio {
  * ONTIO_DISPATCH( ontio::bios, (setpriv)(setalimits)(setglimits)(setprods)(reqauth) )
  * @endcode
  */
+#if defined(WASM_LOCAL_DEBUG )
 #define ONTIO_DISPATCH( TYPE, MEMBERS ) \
 extern "C" { \
-   void apply(void) { \
+   void apply(void) {  \
       std::string method; \
-      size_t size = InputLength(); \
+      size_t size = input_length(); \
       constexpr size_t max_stack_buffer_size = 512; \
       void* buffer = nullptr; \
       if( size > 0 ) { \
          buffer = max_stack_buffer_size < size ? malloc(size) : alloca(size); \
-         GetInput( buffer ); \
+         get_input( buffer ); \
       } \
       datastream<const char*> ds((char*)buffer, size); \
       ds >> method; \
@@ -142,6 +143,33 @@ extern "C" { \
       } \
       /* does not allow destructor of thiscontract to run: ontio_exit(0); */ \
    } \
-} \
+} 
+#else
+#define ONTIO_DISPATCH( TYPE, MEMBERS ) \
+extern "C" { \
+   void invoke(void) {  \
+      std::string method; \
+      size_t size = input_length(); \
+      constexpr size_t max_stack_buffer_size = 512; \
+      void* buffer = nullptr; \
+      if( size > 0 ) { \
+         buffer = max_stack_buffer_size < size ? malloc(size) : alloca(size); \
+         get_input( buffer ); \
+      } \
+      datastream<const char*> ds((char*)buffer, size); \
+      ds >> method; \
+      printf("method %s\n", method.c_str());	   	\
+      std::string method_t; 	\
+      uint64_t action = ontio::name(method).value; 	\
+      switch( action ) { \
+          ONTIO_DISPATCH_HELPER( TYPE, MEMBERS ) \
+      } \
+      if ( max_stack_buffer_size < size ) { \
+         free(buffer); \
+      } \
+      /* does not allow destructor of thiscontract to run: ontio_exit(0); */ \
+   } \
+}
+#endif
 
 }

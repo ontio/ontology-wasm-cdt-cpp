@@ -45,7 +45,6 @@ add_library(c
             ${THREAD_SOURCES}
             "musl/src/malloc/posix_memalign.c"
             "musl/src/malloc/memalign.c"
-	    "musl/src/ontio/ontio.cpp"
             ${HEADERS})
 
 target_include_directories(c 
