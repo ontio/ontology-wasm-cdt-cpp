@@ -58,7 +58,7 @@ namespace ontio {
    template<typename T, typename... Args>
    bool execute_action( datastream<const char*>& ds, void (T::*func)(Args...)  ) {
 	   /*
-      size_t size = action_data_size();
+      size_t size = InputLength();
 
       //using malloc/free here potentially is not exception-safe, although WASM doesn't support exceptions
       constexpr size_t max_stack_buffer_size = 512;
@@ -122,7 +122,7 @@ namespace ontio {
 extern "C" { \
    void apply(void) { \
       std::string method; \
-      size_t size = action_data_size(); \
+      size_t size = InputLength(); \
       constexpr size_t max_stack_buffer_size = 512; \
       void* buffer = nullptr; \
       if( size > 0 ) { \

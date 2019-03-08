@@ -79,7 +79,7 @@ extern "C" {
     * @brief Get the length of current action's data field
     * @return the length of the current action's data field
     */
-   uint32_t action_data_size(void);
+   uint32_t InputLength(void);
 
    /**
     *  Add the specified account to set of accounts to be notified
