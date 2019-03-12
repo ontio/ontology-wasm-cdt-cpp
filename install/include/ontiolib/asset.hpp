@@ -1,8 +1,5 @@
 #pragma once
-#include "serialize.hpp"
-#include "print.hpp"
-#include "system.hpp"
-#include "symbol.hpp"
+//#include "system.hpp"
 
 #include <tuple>
 #include <limits>
@@ -10,9 +7,9 @@
 namespace ontio {
   /**
    *  Defines %CPP API for managing assets
-   *  @addtogroup asset Asset CPP API
+   *  @addtogroup asset asset CPP API
    *  @ingroup cpp_api
-   *  @{
+   *  @
    */
 
    /**
@@ -26,11 +23,6 @@ namespace ontio {
       int64_t      amount = 0;
 
       /**
-       * The symbol name of the asset
-       */
-      symbol  symbol;
-
-      /**
        * Maximum amount possible for this asset. It's capped to 2^62 - 1
        */
       static constexpr int64_t max_amount    = (1LL << 62) - 1;
@@ -38,16 +30,14 @@ namespace ontio {
       asset() {}
 
       /**
-       * Construct a new asset given the symbol name and the amount
+       * Construct a new asset given the amount
        *
        * @param a - The amount of the asset
-       * @param s - The name of the symbol
        */
-      asset( int64_t a, class symbol s )
-      :amount(a),symbol{s}
+      asset( int64_t a)
+      :amount(a)
       {
          ontio::check( is_amount_within_range(), "magnitude of asset amount must be less than 2^62" );
-         ontio::check( symbol.is_valid(),        "invalid symbol name" );
       }
 
       /**
@@ -59,12 +49,12 @@ namespace ontio {
       bool is_amount_within_range()const { return -max_amount <= amount && amount <= max_amount; }
 
       /**
-       * Check if the asset is valid. %A valid asset has its amount <= max_amount and its symbol name valid
+       * Check if the asset is valid. %A valid asset has its amount <= max_amount.
        *
        * @return true - if the asset is valid
        * @return false - otherwise
        */
-      bool is_valid()const               { return is_amount_within_range() && symbol.is_valid(); }
+      bool is_valid()const               { return is_amount_within_range(); }
 
       /**
        * Set the amount of the asset
@@ -95,7 +85,6 @@ namespace ontio {
        * @post The amount of this asset is subtracted by the amount of asset a
        */
       asset& operator-=( const asset& a ) {
-         ontio::check( a.symbol == symbol, "attempt to subtract asset with different symbol" );
          amount -= a.amount;
          ontio::check( -max_amount <= amount, "subtraction underflow" );
          ontio::check( amount <= max_amount,  "subtraction overflow" );
@@ -110,7 +99,6 @@ namespace ontio {
        * @post The amount of this asset is added with the amount of asset a
        */
       asset& operator+=( const asset& a ) {
-         ontio::check( a.symbol == symbol, "attempt to add asset with different symbol" );
          amount += a.amount;
          ontio::check( -max_amount <= amount, "addition underflow" );
          ontio::check( amount <= max_amount,  "addition overflow" );
@@ -221,11 +209,9 @@ namespace ontio {
        * @param a - The asset which amount acts as the dividend
        * @param b - The asset which amount acts as the divisor
        * @return int64_t - the resulted amount after the division
-       * @pre Both asset must have the same symbol
        */
       friend int64_t operator/( const asset& a, const asset& b ) {
          ontio::check( b.amount != 0, "divide by zero" );
-         ontio::check( a.symbol == b.symbol, "comparison of assets with different symbols is not allowed" );
          return a.amount / b.amount;
       }
 
@@ -236,10 +222,8 @@ namespace ontio {
        * @param b - The second asset to be compared
        * @return true - if both asset has the same amount
        * @return false - otherwise
-       * @pre Both asset must have the same symbol
        */
       friend bool operator==( const asset& a, const asset& b ) {
-         ontio::check( a.symbol == b.symbol, "comparison of assets with different symbols is not allowed" );
          return a.amount == b.amount;
       }
 
@@ -250,7 +234,6 @@ namespace ontio {
        * @param b - The second asset to be compared
        * @return true - if both asset doesn't have the same amount
        * @return false - otherwise
-       * @pre Both asset must have the same symbol
        */
       friend bool operator!=( const asset& a, const asset& b ) {
          return !( a == b);
@@ -263,10 +246,8 @@ namespace ontio {
        * @param b - The second asset to be compared
        * @return true - if the first asset's amount is less than the second asset amount
        * @return false - otherwise
-       * @pre Both asset must have the same symbol
        */
       friend bool operator<( const asset& a, const asset& b ) {
-         ontio::check( a.symbol == b.symbol, "comparison of assets with different symbols is not allowed" );
          return a.amount < b.amount;
       }
 
@@ -277,10 +258,8 @@ namespace ontio {
        * @param b - The second asset to be compared
        * @return true - if the first asset's amount is less or equal to the second asset amount
        * @return false - otherwise
-       * @pre Both asset must have the same symbol
        */
       friend bool operator<=( const asset& a, const asset& b ) {
-         ontio::check( a.symbol == b.symbol, "comparison of assets with different symbols is not allowed" );
          return a.amount <= b.amount;
       }
 
@@ -291,10 +270,8 @@ namespace ontio {
        * @param b - The second asset to be compared
        * @return true - if the first asset's amount is greater than the second asset amount
        * @return false - otherwise
-       * @pre Both asset must have the same symbol
        */
       friend bool operator>( const asset& a, const asset& b ) {
-         ontio::check( a.symbol == b.symbol, "comparison of assets with different symbols is not allowed" );
          return a.amount > b.amount;
       }
 
@@ -305,188 +282,26 @@ namespace ontio {
        * @param b - The second asset to be compared
        * @return true - if the first asset's amount is greater or equal to the second asset amount
        * @return false - otherwise
-       * @pre Both asset must have the same symbol
        */
       friend bool operator>=( const asset& a, const asset& b ) {
-         ontio::check( a.symbol == b.symbol, "comparison of assets with different symbols is not allowed" );
          return a.amount >= b.amount;
       }
 
-      /**
-       * %asset to std::string
-       *
-       * @brief %asset to std::string
-       */
-      std::string to_string()const {
-         int64_t p = (int64_t)symbol.precision();
-         int64_t p10 = 1;
-         bool negative = false;
-         int64_t invert = 1;
-
-         while( p > 0  ) {
-            p10 *= 10; --p;
-         }
-         p = (int64_t)symbol.precision();
-
-         char fraction[p+1];
-         fraction[p] = '\0';
-
-         if (amount < 0) {
-            invert = -1;
-            negative = true;
-         }
-
-         auto change = (amount % p10) * invert;
-
-         for( int64_t i = p -1; i >= 0; --i ) {
-            fraction[i] = (change % 10) + '0';
-            change /= 10;
-         }
-         char str[p+32];
-         const char* fmt = negative ? "-%lld.%s %s" : "%lld.%s %s";
-         snprintf(str, sizeof(str), fmt,
-               (int64_t)(amount/p10), fraction, symbol.code().to_string().c_str());
-         return {str};
+      template<typename DataStream> 
+      friend DataStream& operator<<(DataStream& ds, const asset& t ) {
+	  unsigned_int s = pack_size(t.amount);
+	  ds << s;
+	  ds << t.amount;
+	  return ds;
       }
 
-      /**
-       * %Print the asset
-       *
-       * @brief %Print the asset
-       */
-      void print()const {
-         ontio::print(to_string());
+      template<typename DataStream> 
+      friend DataStream& operator>>(DataStream& ds, asset& t ) {
+	  unsigned_int s;
+	  ds >> s;
+	  ds >> t.amount;
+	  return ds;
       }
-
-      ONTLIB_SERIALIZE( asset, (amount)(symbol) )
    };
 
-  /**
-   * @struct Extended asset which stores the information of the owner of the asset
-   */
-   struct extended_asset {
-      /**
-       * The asset
-       */
-      asset quantity;
-
-      /**
-       * The owner of the asset
-       */
-      name contract;
-
-      /**
-       * Get the extended symbol of the asset
-       *
-       * @return extended_symbol - The extended symbol of the asset
-       */
-      extended_symbol get_extended_symbol()const { return extended_symbol{ quantity.symbol, contract }; }
-
-      /**
-       * Default constructor
-       */
-      extended_asset() = default;
-
-       /**
-       * Construct a new extended asset given the amount and extended symbol
-       */
-      extended_asset( int64_t v, extended_symbol s ):quantity(v,s.get_symbol()),contract(s.get_contract()){}
-      /**
-       * Construct a new extended asset given the asset and owner name
-       */
-      extended_asset( asset a, name c ):quantity(a),contract(c){}
-
-      /**
-       * %Print the extended asset
-       */
-      void print()const {
-         quantity.print();
-         prints("@");
-         printn(contract.value);
-      }
-
-       /**
-       *  Unary minus operator
-       *
-       *  @return extended_asset - New extended asset with its amount is the negative amount of this extended asset
-       */
-      extended_asset operator-()const {
-         return {-quantity, contract};
-      }
-
-      /**
-       * @brief Subtraction operator
-       *
-       * @details Subtraction operator. This subtracts the amount of the extended asset.
-       * @param a - The extended asset to be subtracted
-       * @param b - The extended asset used to subtract
-       * @return extended_asset - New extended asset as the result of subtraction
-       * @pre The owner of both extended asset need to be the same
-       */
-      friend extended_asset operator - ( const extended_asset& a, const extended_asset& b ) {
-         ontio::check( a.contract == b.contract, "type mismatch" );
-         return {a.quantity - b.quantity, a.contract};
-      }
-
-      /**
-       * @brief Addition operator
-       *
-       * @details Addition operator. This adds the amount of the extended asset.
-       * @param a - The extended asset to be added
-       * @param b - The extended asset to be added
-       * @return extended_asset - New extended asset as the result of addition
-       * @pre The owner of both extended asset need to be the same
-       */
-      friend extended_asset operator + ( const extended_asset& a, const extended_asset& b ) {
-         ontio::check( a.contract == b.contract, "type mismatch" );
-         return {a.quantity + b.quantity, a.contract};
-      }
-
-      /// Addition operator.
-      friend extended_asset& operator+=( extended_asset& a, const extended_asset& b ) {
-         ontio::check( a.contract == b.contract, "type mismatch" );
-         a.quantity += b.quantity;
-         return a;
-      }
-
-      /// Subtraction operator.
-      friend extended_asset& operator-=( extended_asset& a, const extended_asset& b ) {
-         ontio::check( a.contract == b.contract, "type mismatch" );
-         a.quantity -= b.quantity;
-         return a;
-      }
-
-      /// Less than operator
-      friend bool operator<( const extended_asset& a, const extended_asset& b ) {
-         ontio::check( a.contract == b.contract, "type mismatch" );
-         return a.quantity < b.quantity;
-      }
-
-
-      /// Comparison operator
-      friend bool operator==( const extended_asset& a, const extended_asset& b ) {
-         return std::tie(a.quantity, a.contract) == std::tie(b.quantity, b.contract);
-      }
-
-      /// Comparison operator
-      friend bool operator!=( const extended_asset& a, const extended_asset& b ) {
-         return std::tie(a.quantity, a.contract) != std::tie(b.quantity, b.contract);
-      }
-
-      /// Comparison operator
-      friend bool operator<=( const extended_asset& a, const extended_asset& b ) {
-         ontio::check( a.contract == b.contract, "type mismatch" );
-         return a.quantity <= b.quantity;
-      }
-
-      /// Comparison operator
-      friend bool operator>=( const extended_asset& a, const extended_asset& b ) {
-         ontio::check( a.contract == b.contract, "type mismatch" );
-         return a.quantity >= b.quantity;
-      }
-
-      ONTLIB_SERIALIZE( extended_asset, (quantity)(contract) )
-   };
-
-/// @} asset type
 }

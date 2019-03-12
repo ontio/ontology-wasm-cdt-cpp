@@ -93,8 +93,10 @@ class datastream {
       */
       inline bool put(char c) {
         ontio::check( _pos < _end, "put" );
-        *_pos = c;
-        ++_pos;
+        //*_pos = c;
+	/*if use *_pos. when T is const char * will put error. *_pos = c will error.*/
+	write(&c, 1);
+        //++_pos;
         return true;
       }
 
