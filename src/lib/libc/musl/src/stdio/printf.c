@@ -695,12 +695,22 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen, const
 
 int printf(const char* format, ...)
 {
+#if 0
   va_list va;
   va_start(va, format);
   char buffer[1];
   const int ret = _vsnprintf(_out_char, buffer, (size_t)-1, format, va);
   va_end(va);
   return ret;
+#else
+  char buffer[1024];
+  va_list va;
+  va_start(va, format);
+  const int ret = _vsnprintf(_out_buffer, buffer, 1024, format, va);
+  va_end(va);
+  debug(buffer,strlen(buffer));
+  return ret;
+#endif
 }
 
 
