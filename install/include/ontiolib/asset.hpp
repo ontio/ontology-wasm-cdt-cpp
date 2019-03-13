@@ -287,21 +287,7 @@ namespace ontio {
          return a.amount >= b.amount;
       }
 
-      template<typename DataStream> 
-      friend DataStream& operator<<(DataStream& ds, const asset& t ) {
-	  unsigned_int s = pack_size(t.amount);
-	  ds << s;
-	  ds << t.amount;
-	  return ds;
-      }
-
-      template<typename DataStream> 
-      friend DataStream& operator>>(DataStream& ds, asset& t ) {
-	  unsigned_int s;
-	  ds >> s;
-	  ds >> t.amount;
-	  return ds;
-      }
+      ONTLIB_SERIALIZE( asset, (amount))
    };
 
 }
