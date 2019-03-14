@@ -2,6 +2,7 @@
 #include "service.h"
 
 namespace ontio {
+
 address self_address(void);
 address caller_address(void);
 address entry_address(void);
@@ -9,14 +10,18 @@ std::vector<char> get_input(void);
 bool check_witness(address &v);
 H256 current_blockhash(void);
 H256 current_txhash(void);
-void notify(char *msg);
+void notify(std::string s);
 address contract_migrate(std::vector<char> &code, uint32_t vmtype, std::string name, std::string version, std::string author, std::string email, std::string desc);
+void storage_delete(key key);
 
 template<typename T>
 void ret(T &t);
-
 template<typename T>
 void call_contract(address &addr, std::vector<char> &v, T &t);
+template<typename T>
+bool storage_read(key key, T &val);
+template<typename T>
+void storage_write(key key, T &val);
 
 address self_address(void) {
 	address t;
@@ -67,8 +72,8 @@ void ret(T &t) {
 	::ret(data.data(), data.size()); 
 }
 
-void notify(char *msg) {
-	::notify(msg, strlen(msg));
+void notify(std::string s) {
+	::notify(s.data(), s.size());
 }
 
 template<typename T>
@@ -81,6 +86,7 @@ void call_native(address &addr, std::vector<char> &v, T &t) {
 	::get_call_output((void *)&t);
 }
 
+/* if type T is a vector or map. the length only can get from outputlen. */
 template<typename T>
 void call_contract(address &addr, std::vector<char> &v, T &t) {
 	size_t outputlen = ::call_contract((void*)addr.data(), v.data(), v.size());
@@ -95,6 +101,29 @@ address contract_migrate(std::vector<char> &code, uint32_t vmtype, std::string n
 	size_t len = ::contract_migrate(code.data(), code.size(), vmtype, name.data(), name.size(), version.data(), version.size(), author.data(), author.size(), email.data(), email.size(), desc.data(), desc.size(), addr.data());
 	ontio_assert(len == ADDRLENGTH, "contract_migrateerror. address must be 20 bytes.");
 	return addr;
+}
+
+/* similar with call_contract, then get the output. the val length also can not assure by smartcontract. like std::vector, std::map. etc. this will get any num element. */
+template<typename T>
+bool storage_read(key key, T &val) {
+	std::vector<char> s;
+	size_t initlength = 32;
+	s.resize(initlength);
+	size_t length = ::storage_read(key.data(), key.size(), s.data(), s.size(), 0);
+	if (length == UINT32_MAX) {
+		return false;
+	}
+
+	/* if length < initlength. then only ready length to vector s*/
+	if (length > initlength) {
+		/* bigger then size of serialize T is ok. but can not smaller.*/
+		s.resize(length);
+		/* not resize change both the size and capacity. so the memory will realloc. should return from offset 0 */
+		::storage_read(key.data(), key.size(), s.data(), s.size(), 0);
+	}
+
+	val = unpack<T>(s);
+	return true;
 }
 
 template<typename T>

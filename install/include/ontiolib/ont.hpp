@@ -412,7 +412,11 @@ class transferinner {
 			arg.debugout();
 
 			#ifndef WASM_LOCAL_DEBUG
-			call_native(addr, data, success);
+			if (check_witness(addr))
+				call_native(addr, data, success);
+			else {
+				printf("auth do not pass\n");
+			}
 			if (success == 1) {
 				printf("transfer sucess=====================");
 			} else {
