@@ -136,4 +136,14 @@ void storage_delete(key key) {
 	::storage_delete(key.data(), key.size());
 }
 
+
+template<typename K0, typename K1>
+key make_key(K0 &key0, K1 &key1) {
+	key result;
+	result.resize(pack_size(key0) + pack_size(key1));
+	datastream<char*> ds( result.data(), result.size() );
+	ds << key0 << key1;
+	return result;
+}
+
 }

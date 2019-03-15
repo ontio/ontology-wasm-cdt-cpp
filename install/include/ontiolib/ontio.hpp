@@ -29,3 +29,12 @@ static_assert( sizeof(long) == sizeof(int), "unexpected size difference" );
   * @defgroup cpp_api C++ API
   * @brief C++ API for writing ESIO Smart Contracts
   */
+
+extern "C" {
+void  ontio_assert( uint32_t test, const char* msg ) {
+	if (not test) {
+		printf("%s\n", msg);
+		abort();
+	}
+}
+}
