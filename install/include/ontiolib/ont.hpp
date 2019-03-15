@@ -1,10 +1,10 @@
 #pragma once
 
 #define ADDRLENGTH 20
-typedef std::array<uint8_t, 256> H256;
-typedef std::array<uint8_t, 160> H160;
+typedef std::array<uint8_t, 32> H256;
+typedef std::array<uint8_t, 20> H160;
 typedef H160 address;
-typedef std::string key;
+typedef std::vector<char> key;
 
 #include "asset.hpp"
 #include "service.hpp"

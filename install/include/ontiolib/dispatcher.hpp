@@ -70,7 +70,6 @@ namespace ontio {
 
       datastream<const char*> ds((char*)buffer, size);
       */
-      printf("execute_action\n");
       std::tuple<std::decay_t<Args>...> args;
       ds >> args;
 
@@ -132,7 +131,6 @@ extern "C" { \
       } \
       datastream<const char*> ds((char*)buffer, size); \
       ds >> method; \
-      printf("method %s\n", method.c_str());	   	\
       std::string method_t; 	\
       uint64_t action = ontio::name(method).value; 	\
       switch( action ) { \
@@ -150,22 +148,15 @@ extern "C" { \
    void invoke(void) {  \
       std::string method; \
       size_t size = input_length(); \
-      constexpr size_t max_stack_buffer_size = 512; \
-      void* buffer = nullptr; \
-      if( size > 0 ) { \
-         buffer = max_stack_buffer_size < size ? malloc(size) : alloca(size); \
-         get_input( buffer ); \
-      } \
-      datastream<const char*> ds((char*)buffer, size); \
+	  std::vector<char> input; \
+	  input.resize(size); \
+      get_input(input.data()); \
+      datastream<const char*> ds(input.data(), input.size()); \
       ds >> method; \
-      printf("method %s\n", method.c_str());	   	\
       std::string method_t; 	\
       uint64_t action = ontio::name(method).value; 	\
       switch( action ) { \
           ONTIO_DISPATCH_HELPER( TYPE, MEMBERS ) \
-      } \
-      if ( max_stack_buffer_size < size ) { \
-         free(buffer); \
       } \
       /* does not allow destructor of thiscontract to run: ontio_exit(0); */ \
    } \
