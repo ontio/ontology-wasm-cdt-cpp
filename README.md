@@ -7,8 +7,8 @@ clone this project. and follow these command below.
 
 ```
 cd install
-cp -r * your_install_dir/
-export PATH=$PAHT:your_install_dir/bin
+cp -r * ${your_install_dir}/
+export PATH=$PAHT:${your_install_dir}/install/bin
 ```
 
 # Feature
