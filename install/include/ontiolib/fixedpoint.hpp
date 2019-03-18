@@ -1,6 +1,4 @@
 #pragma once
-#include <ontiolib/types.h>
-#include <ontiolib/print.hpp>
 
 namespace ontio
 {
@@ -178,6 +176,7 @@ namespace ontio
         /**
          * Prints the fixed point value
          */
+		/*
         void print() const {
            uint128_t ip((uint128_t)int_part());
            uint128_t fp(frac_part());
@@ -185,6 +184,7 @@ namespace ontio
            prints(".");
            printui128(&fp);
         }
+		*/
 
         // Various assignment operators
         /**
@@ -324,11 +324,13 @@ namespace ontio
          *
          * @brief Prints the fixed point value
          */
+		/*
         void print() const {
            printi(int_part());
            prints(".");
            printi128(frac_part());
         }
+		*/
 
         /**
          * Assignment operator. Assign fixed_point32 to fixed_point64
@@ -497,11 +499,13 @@ namespace ontio
         /**
          * Prints the fixed point value
          */
+		/*
         void print() const {
            printi(int_part());
            prints(".");
            printi128(frac_part());
         }
+		*/
 
         // Various assignment operators
         /**

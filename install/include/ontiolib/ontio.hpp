@@ -3,15 +3,13 @@
  *  @copyright defined in ont/LICENSE
  */
 #pragma once
-#include "action.hpp"
-#include "print.hpp"
+#include <stdint.h>
+#include <wchar.h>
 #include "dispatcher.hpp"
 #include "contract.hpp"
 #include "ont.hpp"
 
-#ifndef ONTIO_NATIVE
 static_assert( sizeof(long) == sizeof(int), "unexpected size difference" );
-#endif
 
 /**
  * Helper macros to reduce the verbosity for common contracts
@@ -37,4 +35,7 @@ void  ontio_assert( uint32_t test, const char* msg ) {
 		abort();
 	}
 }
+#ifdef WASM_LOCAL_DEBUG
+void save_input_arg( void* msg, size_t len);
+#endif
 }

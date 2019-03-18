@@ -4,13 +4,8 @@
  */
 #pragma once
 #include "system.hpp"
-#include "types.h"
-#include "symbol.hpp"
 #include "fixed_bytes.hpp"
-#include "crypto.hpp"
-#include "ignore.hpp"
 #include "varint.hpp"
-#include "binary_extension.hpp"
 
 #include <boost/container/flat_set.hpp>
 #include <boost/container/flat_map.hpp>
@@ -334,40 +329,6 @@ inline datastream<Stream>& operator>>(datastream<Stream>& ds, std::deque<T>& d) 
 }
 
 /**
- *  Serialize a binary_extension into a stream
- *
- *  @brief Serialize a binary_extension
- *  @param ds - The stream to write
- *  @param opt - The value to serialize
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream, typename T>
-inline datastream<Stream>& operator<<(datastream<Stream>& ds, const ontio::binary_extension<T>& be) {
-  ds << be.value_or();
-  return ds;
-}
-
-/**
- *  Deserialize a binary_extension from a stream
- *
- *  @brief Deserialize a binary_extension
- *  @param ds - The stream to read
- *  @param opt - The destination for deserialized value
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream, typename T>
-inline datastream<Stream>& operator>>(datastream<Stream>& ds, ontio::binary_extension<T>& be) {
-  if( ds.remaining() ) {
-     T val;
-     ds >> val;
-     be.emplace(val);
-  }
-  return ds;
-}
-
-/**
  *  Serialize an std::variant into a stream
  *
  *  @brief Serialize an std::variant
@@ -493,209 +454,6 @@ inline datastream<Stream>& operator>>(datastream<Stream>& ds, std::optional<T>& 
 }
 
 /**
- *  Serialize a symbol_code into a stream
- *
- *  @brief Serialize a symbol_code
- *  @param ds - The stream to write
- *  @param sym - The value to serialize
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator<<(datastream<Stream>& ds, const ontio::symbol_code sym_code) {
-  uint64_t raw = sym_code.raw();
-  ds.write( (const char*)&raw, sizeof(raw));
-  return ds;
-}
-
-/**
- *  Deserialize a symbol_code from a stream
- *
- *  @brief Deserialize a symbol_code
- *  @param ds - The stream to read
- *  @param symbol - The destination for deserialized value
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator>>(datastream<Stream>& ds, ontio::symbol_code& sym_code) {
-  uint64_t raw = 0;
-  ds.read((char*)&raw, sizeof(raw));
-  sym_code = symbol_code(raw);
-  return ds;
-}
-
-/**
- *  Serialize a symbol into a stream
- *
- *  @brief Serialize a symbol
- *  @param ds - The stream to write
- *  @param sym - The value to serialize
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator<<(datastream<Stream>& ds, const ontio::symbol sym) {
-  uint64_t raw = sym.raw();
-  ds.write( (const char*)&raw, sizeof(raw));
-  return ds;
-}
-
-/**
- *  Deserialize a symbol from a stream
- *
- *  @brief Deserialize a symbol
- *  @param ds - The stream to read
- *  @param symbol - The destination for deserialized value
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator>>(datastream<Stream>& ds, ontio::symbol& sym) {
-  uint64_t raw = 0;
-  ds.read((char*)&raw, sizeof(raw));
-  sym = symbol(raw);
-  return ds;
-}
-
-/**
- *  Serialize an ignored_wrapper type into a stream
- *
- *  @brief Serialize ignored_wrapper<T>'s T value
- *  @param ds - The stream to write
- *  @param val - The value to serialize
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream, typename T>
-inline datastream<Stream>& operator<<(datastream<Stream>& ds, const ::ontio::ignore_wrapper<T>& val) {
-  ds << val.value;
-  return ds;
-}
-
-/**
- *  Serialize an ignored type into a stream
- *
- *  @brief Serialize an ignored type
- *  @param ds - The stream to write
- *  @param ignore - The value to serialize
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream, typename T>
-inline datastream<Stream>& operator<<(datastream<Stream>& ds, const ::ontio::ignore<T>& val) {
-  return ds;
-}
-
-/**
- *  Deserialize an ignored type from a stream
- *
- *  @brief Deserialize an ignored type
- *  @param ds - The stream to read
- *  @param ignored - The destination for deserialized value
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream, typename T>
-inline datastream<Stream>& operator>>(datastream<Stream>& ds, ::ontio::ignore<T>) {
-  return ds;
-}
-
-/**
- *  Serialize a public_key into a stream
- *
- *  @brief Serialize a public_key
- *  @param ds - The stream to write
- *  @param pubkey - The value to serialize
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator<<(datastream<Stream>& ds, const capi_public_key& pubkey) {
-  ds.write( (const char*)&pubkey, sizeof(pubkey));
-  return ds;
-}
-
-/**
- *  Deserialize a public_key from a stream
- *
- *  @brief Deserialize a public_key
- *  @param ds - The stream to read
- *  @param pubkey - The destination for deserialized value
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator>>(datastream<Stream>& ds, capi_public_key& pubkey) {
-  ds.read((char*)&pubkey, sizeof(pubkey));
-  return ds;
-}
-
-/**
- *  Serialize an ontio::public_key into a stream
- *
- *  @brief Serialize an ontio::public_key
- *  @param ds - The stream to write
- *  @param pubkey - The value to serialize
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator<<(datastream<Stream>& ds, const ontio::public_key& pubkey) {
-   ds << pubkey.type;
-   ds.write( pubkey.data.data(), pubkey.data.size() );
-   return ds;
-}
-
-/**
- *  Deserialize an ontio::public_key from a stream
- *
- *  @brief Deserialize an ontio::public_key
- *  @param ds - The stream to read
- *  @param pubkey - The destination for deserialized value
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator>>(datastream<Stream>& ds, ontio::public_key& pubkey) {
-   ds >> pubkey.type;
-   ds.read( pubkey.data.data(), pubkey.data.size() );
-   return ds;
-}
-
-/**
- *  Serialize an ontio::signature into a stream
- *
- *  @brief Serialize an ontio::signature
- *  @param ds - The stream to write
- *  @param sig - The value to serialize
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator<<(datastream<Stream>& ds, const ontio::signature& sig) {
-   ds << sig.type;
-   ds.write( sig.data.data(), sig.data.size() );
-   return ds;
-}
-
-/**
- *  Deserialize an ontio::signature from a stream
- *
- *  @brief Deserialize an ontio::signature
- *  @param ds - The stream to read
- *  @param sig - The destination for deserialized value
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator>>(datastream<Stream>& ds, ontio::signature& sig) {
-   ds >> sig.type;
-   ds.read( sig.data.data(), sig.data.size() );
-   return ds;
-}
-
-/**
  *  Serialize a fixed_bytes into a stream
  *
  *  @brief Serialize a fixed_bytes
@@ -759,35 +517,7 @@ inline datastream<Stream>& operator>>(datastream<Stream>& ds, bool& d) {
   return ds;
 }
 
-/**
- *  Serialize a checksum256 into a stream
- *
- *  @brief Serialize a checksum256
- *  @param ds - The stream to write
- *  @param d - The value to serialize
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator<<(datastream<Stream>& ds, const capi_checksum256& d) {
-   ds.write( (const char*)&d.hash[0], sizeof(d.hash) );
-   return ds;
-}
 
-/**
- *  Deserialize a checksum256 from a stream
- *
- *  @brief Deserialize a checksum256
- *  @param ds - The stream to read
- *  @param d - The destination for deserialized value
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator>>(datastream<Stream>& ds, capi_checksum256& d) {
-   ds.read((char*)&d.hash[0], sizeof(d.hash) );
-   return ds;
-}
 
 /**
  *  Serialize a string into a stream
@@ -1415,68 +1145,6 @@ std::vector<char> pack( const T& value ) {
   datastream<char*> ds( result.data(), result.size() );
   ds << value;
   return result;
-}
-
-///@}
-
-/**
- *  Serialize a capi_checksum160 type
- *
- *  @brief Serializea capi_checksum160 type
- *  @param ds - The stream to write
- *  @param cs - The value to serialize
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator<<(datastream<Stream>& ds, const capi_checksum160& cs) {
-   ds.write((const char*)&cs.hash[0], sizeof(cs.hash));
-   return ds;
-}
-
-/**
- *  Deserialize a capi_checksum160 type
- *
- *  @brief Deserialize a capi_checksum160 type
- *  @param ds - The stream to read
- *  @param cs - The destination for deserialized value
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator>>(datastream<Stream>& ds, capi_checksum160& cs) {
-   ds.read((char*)&cs.hash[0], sizeof(cs.hash));
-   return ds;
-}
-
-/**
- *  Serialize a capi_checksum512 type
- *
- *  @brief Serialize a capi_checksum512 type
- *  @param ds - The stream to write
- *  @param cs - The value to serialize
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator<<(datastream<Stream>& ds, const capi_checksum512& cs) {
-   ds.write((const char*)&cs.hash[0], sizeof(cs.hash));
-   return ds;
-}
-
-/**
- *  Deserialize a capi_checksum512 type
- *
- *  @brief Deserialize a capi_checksum512 type
- *  @param ds - The stream to read
- *  @param cs - The destination for deserialized value
- *  @tparam Stream - Type of datastream buffer
- *  @return datastream<Stream>& - Reference to the datastream
- */
-template<typename Stream>
-inline datastream<Stream>& operator>>(datastream<Stream>& ds, capi_checksum512& cs) {
-   ds.read((char*)&cs.hash[0], sizeof(cs.hash));
-   return ds;
 }
 
 template<typename Stream>
