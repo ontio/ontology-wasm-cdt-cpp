@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE
+ *  @copyright defined in ont/LICENSE
  */
 #pragma once
 #include "types.h"
