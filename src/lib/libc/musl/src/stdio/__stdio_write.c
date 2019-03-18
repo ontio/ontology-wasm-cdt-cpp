@@ -1,6 +1,6 @@
 #include "stdio_impl.h"
 //include <sys/uio.h>
-#include <ontlib/print.h>
+void debug( const char* cstr, uint32_t len );
 
 size_t __stdio_write(FILE *f, const unsigned char *buf, size_t len)
 {
