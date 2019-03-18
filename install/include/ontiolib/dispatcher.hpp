@@ -1,6 +1,12 @@
 #pragma once
-#include <ontiolib/print.hpp>
-#include <ontiolib/action.hpp>
+#include "datastream.hpp"
+#include "serialize.hpp"
+#include "memory.hpp"
+
+#include <boost/preprocessor/variadic/size.hpp>
+#include <boost/preprocessor/variadic/to_tuple.hpp>
+#include <boost/preprocessor/tuple/enum.hpp>
+#include <boost/preprocessor/facilities/overload.hpp>
 
 #include <boost/fusion/adapted/std_tuple.hpp>
 #include <boost/fusion/include/std_tuple.hpp>
@@ -8,44 +14,7 @@
 #include <boost/mp11/tuple.hpp>
 
 namespace ontio {
-
-   template<typename Contract, typename FirstAction>
-   bool dispatch( uint64_t code, uint64_t act ) {
-      if( code == FirstAction::get_account() && FirstAction::get_name() == act ) {
-         Contract().on( unpack_action_data<FirstAction>() );
-         return true;
-      }
-      return false;
-   }
-
-
-   /**
-    * This method will dynamically dispatch an incoming set of actions to
-    *
-    * ```
-    * static Contract::on( ActionType )
-    * ```
-    *
-    * For this to work the Actions must be derived from ontio::contract
-    *
-    */
-   template<typename Contract, typename FirstAction, typename SecondAction, typename... Actions>
-   bool dispatch( uint64_t code, uint64_t act ) {
-      if( code == FirstAction::get_account() && FirstAction::get_name() == act ) {
-         Contract().on( unpack_action_data<FirstAction>() );
-         return true;
-      }
-      return ontio::dispatch<Contract,SecondAction,Actions...>( code, act );
-   }
-
-   /**
-    * @addtogroup dispatcher Dispatcher C++ API
-    * @ingroup cpp_api
-    * @brief Defines C++ functions to dispatch action to proper action handler inside a contract
-    * @{
-    */
-
-   /**
+     /**
     * Unpack the received action and execute the correponding action handler
     *
     * @tparam T - The contract class that has the correponding action handler, this contract should be derived from ontio::contract
@@ -57,19 +26,6 @@ namespace ontio {
     */
    template<typename T, typename... Args>
    bool execute_action( datastream<const char*>& ds, void (T::*func)(Args...)  ) {
-	   /*
-      size_t size = input_length();
-
-      //using malloc/free here potentially is not exception-safe, although WASM doesn't support exceptions
-      constexpr size_t max_stack_buffer_size = 512;
-      void* buffer = nullptr;
-      if( size > 0 ) {
-         buffer = max_stack_buffer_size < size ? malloc(size) : alloca(size);
-         get_input( buffer, size );
-      }
-
-      datastream<const char*> ds((char*)buffer, size);
-      */
       std::tuple<std::decay_t<Args>...> args;
       ds >> args;
 
@@ -80,17 +36,8 @@ namespace ontio {
       };
 
       boost::mp11::tuple_apply( f2, args );
-      /*
-      if ( max_stack_buffer_size < size ) {
-         free(buffer);
-      }
-      */
       return true;
    }
-
-/// @}
-
-
 
  // Helper macro for ONTIO_DISPATCH_INTERNAL
  #define ONTIO_DISPATCH_INTERNAL( r, OP, elem ) \
@@ -139,7 +86,6 @@ extern "C" { \
       if ( max_stack_buffer_size < size ) { \
          free(buffer); \
       } \
-      /* does not allow destructor of thiscontract to run: ontio_exit(0); */ \
    } \
 } 
 #else
@@ -158,9 +104,7 @@ extern "C" { \
       switch( action ) { \
           ONTIO_DISPATCH_HELPER( TYPE, MEMBERS ) \
       } \
-      /* does not allow destructor of thiscontract to run: ontio_exit(0); */ \
    } \
 }
 #endif
-
 }
