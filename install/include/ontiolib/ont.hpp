@@ -386,49 +386,12 @@ class transferinner {
 			}
 	}; 
 
-	//#ifdef WASM_LOCAL_DEBUG
-	static void print_byte(uint8_t *buffer, uint64_t len) {
-		uint64_t i = 0;
-		for(; i < len; i++) {
-			printf("%02X ",buffer[i]);
-		}
-		printf("\n");
-	}
-	//#endif
-
     public:
 		static bool transfer_inner(address addr, address &from, address &to, asset &amount) {
 			bool success;
 			transfer_arg arg("transfer", from, to, amount);
 			auto data = pack(arg);
-
-			for(auto i : addr) { printf("%02x",i); }
-			printf("\n");
-
-			printf("args size %u\n", data.size());
-			print_byte((uint8_t *)data.data(), data.size());
-
-			printf("hello world steven in transfer\n");
-			arg.debugout();
-
-			#ifndef WASM_LOCAL_DEBUG
-			if (check_witness(addr))
-				call_native(addr, data, success);
-			else {
-				printf("auth do not pass\n");
-			}
-			if (success == 1) {
-				printf("transfer sucess=====================");
-			} else {
-				printf("transfer failed=====================");
-			}
-			#endif
-
-			printf("========================================\n");
-			transfer_arg tt1;
-			memset(&tt1, 0, sizeof(transfer_arg));
-			tt1 = unpack<transfer_arg>(data);
-			tt1.debugout();
+			call_native(addr, data, success);
 			return success;
 		}
 
@@ -436,25 +399,7 @@ class transferinner {
 			bool success;
 			transferfrom_arg arg("transferfrom", sender, from, to, amount);
 			auto data = pack(arg);
-
-			printf("args size %u\n", data.size());
-			print_byte((uint8_t *)data.data(), data.size());
-
-			for(auto i : addr) { printf("%02x",i); }
-			printf("\n");
-			arg.debugout();
-			#ifndef WASM_LOCAL_DEBUG
 			call_native(addr, data, success);
-			if (success == 1) {
-				printf("transferfrom sucess=====================");
-			} else {
-				printf("transferfrom failed=====================");
-			}
-
-			#endif
-			printf("========================================\n");
-			transferfrom_arg tt1 = unpack<transferfrom_arg>(data);
-			tt1.debugout();
 			return success;
 		}
 
@@ -462,20 +407,7 @@ class transferinner {
 			bool success;
 			approve_arg arg("approve", from, to, amount);
 			auto data = pack(arg);
-			for(auto i : addr) { printf("%02x",i); }
-			printf("\n");
-			arg.debugout();
-			#ifndef WASM_LOCAL_DEBUG
 			call_native(addr, data, success);
-			if (success == 1) {
-				printf("approve sucess=====================");
-			} else {
-				printf("approve failed=====================");
-			}
-			#endif
-			printf("========================================\n");
-			approve_arg tt1 = unpack<approve_arg>(data);
-			tt1.debugout();
 			return success;
 		}
 
@@ -484,21 +416,10 @@ class transferinner {
 
 			balanceof_arg arg("balanceOf", from);
 			auto data = pack(arg);
-			for(auto i : addr) { printf("%02x",i); }
-			printf("\n");
-			arg.debugout();
-			#ifndef WASM_LOCAL_DEBUG
 			call_native(addr , data,  balance);
-
 			ontio::check( balance <= asset::max_amount, "balanceof_inner. balance overflow");
 			ontio::check( balance >= -asset::max_amount, "balanceof_inner. balance underflow");
-			#endif
 			asset res((int64_t) balance);
-
-			printf("========================================\n");
-			balanceof_arg tt1 = unpack<balanceof_arg>(data);
-			tt1.debugout();
-
 			return res;
 		}
 
@@ -506,20 +427,11 @@ class transferinner {
 			int128_t balance;
 			allowance_arg arg("allowance", from, to);
 			auto data = pack(arg);
-			arg.debugout();
-			for(auto i : addr) { printf("%02x",i); }
-			printf("\n");
-			#ifndef WASM_LOCAL_DEBUG
 			call_native(addr, data, balance);
 
 			ontio::check( balance <= asset::max_amount, "balanceof_inner. balance overflow");
 			ontio::check( balance >= -asset::max_amount, "balanceof_inner. balance underflow");
-			#endif
 			asset res((int64_t) balance);
-
-			printf("========================================\n");
-			allowance_arg tt1 = unpack<allowance_arg>(data);
-			tt1.debugout();
 
 			return res;
 		}
