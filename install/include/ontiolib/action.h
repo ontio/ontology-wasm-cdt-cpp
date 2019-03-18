@@ -1,6 +1,6 @@
 /**
  *  @file
- *  @copyright defined in eos/LICENSE
+ *  @copyright defined in ont/LICENSE
  */
 #pragma once
 #include "system.hpp"
@@ -29,7 +29,7 @@ extern "C" {
     * @code
     * // Assume this action is used for the following examples:
     * // {
-    * //  "code": "eos",
+    * //  "code": "ont",
     * //  "type": "transfer",
     * //  "authorization": [{ "account": "inita", "permission": "active" }],
     * //  "data": {
