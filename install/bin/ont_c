@@ -7,7 +7,7 @@ import os
 print_help = False
 compile_lib = False
 install_dir = os.path.split(os.path.realpath(__file__))[0] + "/../"
-common_option = ["--target=wasm32", "-O3", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics", "-nostdinc", "-static", "-fno-rtti -fno-exceptions", "-DBOOST_DISABLE_ASSERTS ", "-DBOOST_EXCEPTION_DISABLE ", "-Wl,--gc-sections,--merge-data-segments,-zstack-size=8192", "-Wno-unused-command-line-argument"]
+common_option = ["--target=wasm32", "-O3", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics", "-nostdinc", "-static", "-fno-rtti -fno-exceptions", "-DBOOST_DISABLE_ASSERTS ", "-DBOOST_EXCEPTION_DISABLE ", "-Wl,--gc-sections,--merge-data-segments,-zstack-size=8192", "-Wno-unused-command-line-argument", "-c"]
 wasmvm_service = ["debug", "abort", "ont_assert", "save_input_arg", "get_input", "input_length", "call_contract", "ret", "get_call_output", "call_output_length", "timestamp", "block_height", "self_address", "caller_address", "entry_address", "get_input", "check_witness", "current_blockhash", "current_txhash", "notify", "storage_read", "storage_write", "storage_delete", "contract_create", "contract_migrate", "contract_delete"]
 
 
