@@ -31,7 +31,7 @@ static_assert( sizeof(long) == sizeof(int), "unexpected size difference" );
 extern "C" {
 void  ontio_assert( uint32_t test, const char* msg ) {
 	if (not test) {
-		printf("%s\n", msg);
+		debug(msg, strlen(msg));
 		abort();
 	}
 }

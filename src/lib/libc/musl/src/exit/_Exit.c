@@ -4,3 +4,8 @@ _Noreturn void _Exit(int ec)
 {
    abort();
 }
+
+_Noreturn void abort(void)
+{
+
+}
