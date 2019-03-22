@@ -37,6 +37,7 @@ def compileWasm(options_for_clang):
         cmd += " -I" + install_dir + "include/libc "
         cmd += " -I" + install_dir + "include/boost "
         cmd += " -I" + install_dir + "include/ontiolib"
+        cmd += " -I" + install_dir + "include/clang"
         cmd += " -I" + install_dir + "include "
 
     if not (compile_lib or print_help):
