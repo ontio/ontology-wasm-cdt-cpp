@@ -12,6 +12,9 @@
 #include <boost/fusion/include/std_tuple.hpp>
 
 #include <boost/mp11/tuple.hpp>
+extern "C" {
+void ret(void *res, size_t len);
+}
 
 namespace ontio {
      /**
@@ -24,19 +27,34 @@ namespace ontio {
     * @param func - The action handler
     * @return true
     */
-   template<typename T, typename... Args>
-   bool execute_action( datastream<const char*>& ds, void (T::*func)(Args...)  ) {
+   template<typename T, typename R, typename... Args>
+   void execute_action( datastream<const char*>& ds, R (T::*func)(Args...)  ) {
       std::tuple<std::decay_t<Args>...> args;
       ds >> args;
 
       T inst(ds);
 
-      auto f2 = [&]( auto... a ){
+      auto f2 = [&]( auto... a ) {
+         R t = ((&inst)->*func)( a... );
+		 auto data = pack<R>(t);
+		 ::ret(data.data(), data.size()); 
+      };
+
+      boost::mp11::tuple_apply( f2, args );
+   }
+
+   template<typename T, typename... Args>
+   void execute_action( datastream<const char*>& ds, void (T::*func)(Args...)  ) {
+      std::tuple<std::decay_t<Args>...> args;
+      ds >> args;
+
+      T inst(ds);
+
+      auto f2 = [&]( auto... a ) {
          ((&inst)->*func)( a... );
       };
 
       boost::mp11::tuple_apply( f2, args );
-      return true;
    }
 
  // Helper macro for ONTIO_DISPATCH_INTERNAL

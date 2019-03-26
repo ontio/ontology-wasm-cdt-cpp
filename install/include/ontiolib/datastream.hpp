@@ -1129,6 +1129,13 @@ size_t pack_size( const T& value ) {
   return ps.tellp();
 }
 
+template<typename T, typename... Args>
+size_t pack_size( const T& first, Args&&... args) {
+  datastream<size_t> ps;
+  ps << first;
+  return (ps.tellp() + pack_size(std::forward<Args>(args)...));
+}
+
 /**
  * Get packed data
  *
@@ -1144,6 +1151,16 @@ std::vector<char> pack( const T& value ) {
 
   datastream<char*> ds( result.data(), result.size() );
   ds << value;
+  return result;
+}
+
+template<typename... Args>
+std::vector<char> pack(Args&&... args) {
+  std::vector<char> result;
+  result.resize(pack_size(args...));
+  datastream<char*> ds( result.data(), result.size());
+  std::tuple<std::decay_t<Args>...> tuple_args(std::forward<Args>(args)...);
+  ds << tuple_args;
   return result;
 }
 

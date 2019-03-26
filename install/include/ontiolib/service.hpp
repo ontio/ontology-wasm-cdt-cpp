@@ -96,6 +96,15 @@ void call_contract(address &addr, std::vector<char> &v, T &t) {
 	t = unpack<T>(res);
 }
 
+template<typename T>
+void get_call_output(T &t) {
+	size_t outputlen = call_output_length();
+	std::vector<char> res;
+	res.resize(outputlen);
+	::get_call_output(res.data());
+	t = unpack<T>(res);
+}
+
 address contract_migrate(std::vector<char> &code, uint32_t vmtype, std::string name, std::string version, std::string author, std::string email, std::string desc) {
 	address addr;
 	size_t len = ::contract_migrate(code.data(), code.size(), vmtype, name.data(), name.size(), version.data(), version.size(), author.data(), author.size(), email.data(), email.size(), desc.data(), desc.size(), addr.data());
@@ -105,7 +114,7 @@ address contract_migrate(std::vector<char> &code, uint32_t vmtype, std::string n
 
 /* similar with call_contract, then get the output. the val length also can not assure by smartcontract. like std::vector, std::map. etc. this will get any num element. */
 template<typename T>
-bool storage_read(key key, T &val) {
+bool storage_get(key key, T &val) {
 	std::vector<char> s;
 	size_t initlength = 32;
 	s.resize(initlength);
@@ -127,7 +136,7 @@ bool storage_read(key key, T &val) {
 }
 
 template<typename T>
-void storage_write(key key, T &val) {
+void storage_put(key key, T &val) {
 	auto data = pack(val);
 	::storage_write(key.data(), key.size(), data.data(), data.size());
 }
@@ -136,14 +145,5 @@ void storage_delete(key key) {
 	::storage_delete(key.data(), key.size());
 }
 
-
-template<typename K0, typename K1>
-key make_key(K0 &key0, K1 &key1) {
-	key result;
-	result.resize(pack_size(key0) + pack_size(key1));
-	datastream<char*> ds( result.data(), result.size() );
-	ds << key0 << key1;
-	return result;
-}
-
+#define make_key pack
 }
