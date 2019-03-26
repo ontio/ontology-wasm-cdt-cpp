@@ -8,7 +8,7 @@ clone this project. and follow these command below.
 ```
 cd install
 cp -r * ${your_install_dir}/
-export PATH=$PAHT:${your_install_dir}/bin
+export PATH=$PATH:${your_install_dir}/bin
 ```
 
 # Feature
@@ -44,7 +44,7 @@ class oep4 : public contract {
 		for(auto i: OWNER) { printf("%02x", i); }; printf("\n");
 #endif
 		if (check_witness(OWNER)) {
-			if(storage_read(SUPPLY_KEY, total_inner)) {
+			if(storage_get(SUPPLY_KEY, total_inner)) {
 #ifdef WASM_LOCAL_DEBUG_OEP4
 				printf("already init. total = %lld\n", total_inner.amount);
 #endif
@@ -55,8 +55,8 @@ class oep4 : public contract {
 #endif
 				success = true;
 				key key_owner = make_key(balanceprfix, OWNER);
-				storage_write(SUPPLY_KEY, total);
-				storage_write(key_owner, total);
+				storage_put(SUPPLY_KEY, total);
+				storage_put(key_owner, total);
 				ret(success);
 			}
 		} else {
@@ -86,7 +86,7 @@ class oep4 : public contract {
 
 		key fromkey = make_key(balanceprfix, from);
 		asset frombalance = 0; 
-		if (not storage_read(fromkey, frombalance))
+		if (not storage_get(fromkey, frombalance))
 			ret(faild);
 
 		if (amount > frombalance)
@@ -95,18 +95,18 @@ class oep4 : public contract {
 			storage_delete(fromkey);
 		else {
 			frombalance -= amount;
-			storage_write(fromkey, frombalance);
+			storage_put(fromkey, frombalance);
 		}
 
 		key tokey = make_key(balanceprfix, to);
 		asset tobalance = 0;
-		storage_read(tokey, tobalance);
+		storage_get(tokey, tobalance);
 
 		tobalance += amount;
 #ifdef WASM_LOCAL_DEBUG_OEP4
 		printf("transfer amount : %lld\n", amount.amount);
 #endif
-		storage_write(tokey, tobalance);
+		storage_put(tokey, tobalance);
 		ret(success);
 	}
 
@@ -118,7 +118,7 @@ class oep4 : public contract {
 		bool failed = false;
 		asset mybalance = 0;
 		key addr_key = make_key(balanceprfix, addr);
-		if (not storage_read(addr_key, mybalance)) {
+		if (not storage_get(addr_key, mybalance)) {
 #ifdef WASM_LOCAL_DEBUG_OEP4
 			printf("read failed\n");
 #endif
