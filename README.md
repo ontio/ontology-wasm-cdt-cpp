@@ -22,19 +22,20 @@ export PATH=$PATH:${your_install_dir}/bin
 code blow is a simple oep4 contract for ontology. only need include<ontoiolib/ontio.hpp>.  class oep4 is your contract class. only need public inherit the contract class. and realize any interface you want. last use the ONTIO_DISPATCH macro to generate the entry code of your contract. developer only need care about the interface.
 
 ```
+//#define WASM_DEBUG_INTERFACE
+#define WASM_LOCAL_DEBUG_OEP4
 #include<ontiolib/ontio.hpp>
-
 using namespace ontio;
 
 class oep4 : public contract {
 	key SUPPLY_KEY = pack(std::string("TotalSupply"));
-	address OWNER = {0xe6,0x8f,0x49,0x98,0xd8,0x37,0xfc,0xdd,0x47,0xa5,0x05,0x61,0xf7,0xf3,0x29,0x40,0xc7,0xc6,0xc2,0x61};
+	address OWNER = {0xe9,0x8f,0x49,0x98,0xd8,0x37,0xfc,0xdd,0x44,0xa5,0x05,0x61,0xf7,0xf3,0x21,0x40,0xc7,0xc6,0xc2,0x60};
 	asset total = 1000000000;
 	uint8_t balanceprfix = 0x1;
 
 	public:
 	using contract::contract;
-	void init(void) {
+	bool init(void) {
 #ifdef WASM_LOCAL_DEBUG_OEP4
 		printf("%s\n",__FUNCTION__);
 #endif
@@ -48,49 +49,55 @@ class oep4 : public contract {
 #ifdef WASM_LOCAL_DEBUG_OEP4
 				printf("already init. total = %lld\n", total_inner.amount);
 #endif
-				ret(success);
+				return success;
 			} else {
 #ifdef WASM_LOCAL_DEBUG_OEP4
 				printf("start init. total %lld", total.amount);
 #endif
 				success = true;
 				key key_owner = make_key(balanceprfix, OWNER);
+#ifdef WASM_LOCAL_DEBUG_OEP4
+				printf("key_owner: ");
+				for(auto i: key_owner) { printf("%02x",i); }
+				printf("\n");
+#endif
 				storage_put(SUPPLY_KEY, total);
 				storage_put(key_owner, total);
-				ret(success);
+				notify("init success hello world.");
+				return success;
 			}
 		} else {
 #ifdef WASM_LOCAL_DEBUG_OEP4
 			printf("auth failed\n");
 #endif
 			success = false;
-			ret(success);
+			return success;
 		}
 	}
 
-	void transfer(address from, address to, asset amount) {
+	bool transfer(address from, address to, asset amount) {
 #ifdef WASM_LOCAL_DEBUG_OEP4
 		printf("%s\n",__FUNCTION__);
 #endif
 		bool success = true;
-		bool faild = false;
+		bool failed = false;
 		if (not check_witness(from)) {
 #ifdef WASM_LOCAL_DEBUG_OEP4
 			printf("transfer auth failed\n");
 #endif
-			ret(faild);
+			return failed;
 		}
 
 		if (amount < 0)
-			ret(faild);
+			return failed;
 
 		key fromkey = make_key(balanceprfix, from);
 		asset frombalance = 0; 
 		if (not storage_get(fromkey, frombalance))
-			ret(faild);
+			return failed;
 
 		if (amount > frombalance)
-			ret(faild);
+			return failed;
 		else if (amount == frombalance)
 			storage_delete(fromkey);
 		else {
@@ -107,28 +114,36 @@ class oep4 : public contract {
 		printf("transfer amount : %lld\n", amount.amount);
 #endif
 		storage_put(tokey, tobalance);
-		ret(success);
+		return failed;
 	}
 
-	void balance(address addr) {
+	asset balance(address addr) {
 #ifdef WASM_LOCAL_DEBUG_OEP4
 		printf("%s\n",__FUNCTION__);
+		printf("get the balance of address: ");
+		for(auto i: addr) { printf("%02x", i); }
+		printf("\n");
 #endif
 		bool success = true;
 		bool failed = false;
 		asset mybalance = 0;
 		key addr_key = make_key(balanceprfix, addr);
+#ifdef WASM_LOCAL_DEBUG_OEP4
+		printf("addr_key: ");
+		for(auto i: addr_key) { printf("%02x",i); }
+		printf("\n");
+#endif
 		if (not storage_get(addr_key, mybalance)) {
 #ifdef WASM_LOCAL_DEBUG_OEP4
 			printf("read failed\n");
 #endif
-			ret(failed);
+			return -1;
 		}
 #ifdef WASM_LOCAL_DEBUG_OEP4
 		printf("read success\n");
 		printf("balance %lld\n", mybalance.amount);
 #endif
-		ret(mybalance);
+		return mybalance;
 	}
 };
 
