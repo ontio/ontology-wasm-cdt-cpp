@@ -136,7 +136,7 @@ bool storage_get(key key, T &val) {
 }
 
 template<typename T>
-void storage_put(key key, T &val) {
+void storage_put(key key, T &&val) {
 	auto data = pack(val);
 	::storage_write(key.data(), key.size(), data.data(), data.size());
 }
