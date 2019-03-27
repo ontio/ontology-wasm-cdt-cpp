@@ -1,7 +1,20 @@
-# ontio-dtc
-ontology wasm toolchain for smart contract development using c/c++. including libc/libc++/boost/. will add more later.
+# 				ontio-dtc
+
+​	ontology wasm toolchain for smart contract development using c/c++. including libc/libc++/boost/. will add more later.
+
+- Free software: MIT license
+  - [Install](#Install)
+  - [Feature](#Feature)
+  - [How to write contract](#How to write contract)
+  - [Interface](#Interface)
+  - [Tools](#Tools)
+  - [Usage](#Usage)
+  - [License](#License)
+  - [Third Party License](#Third Party License)
 
 # Install
+
+##### a. install directly( support ubuntu18.04 amd64 )
 
 clone this project. and follow these command below.
 
@@ -10,6 +23,27 @@ cd install
 cp -r * ${your_install_dir}/
 export PATH=$PATH:${your_install_dir}/bin
 ```
+
+##### b. install by deb
+
+```
+wget https://github.com/ontio/ontology-wasm-cdt-cpp/blob/master/pkg/ontwasm-ubuntu18.04-amd64.deb?raw=true
+dpkg -i ontwasm-ubuntu18.04-amd64.deb?raw=true
+export PATH=$PATH:/ontowasm
+```
+
+##### c. install by docker
+
+​	1. you need install docker first.  
+
+```
+mkdir workkdir; cd workdir
+wget https://github.com/ontio/ontology-wasm-cdt-cpp/blob/master/docker/Dockerfile
+docker built -t ontowasm .
+docker run -it --rm -v /absolute/path/input_dir:/root/contracts ontowasm "/bin/bash"
+```
+
+​	
 
 # Feature
 
