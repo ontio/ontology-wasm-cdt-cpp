@@ -1,6 +1,5 @@
 #pragma once
 
-#include "name.hpp"
 #include "datastream.hpp"
 
 namespace ontio {

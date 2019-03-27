@@ -12,6 +12,8 @@
 #include <boost/fusion/include/std_tuple.hpp>
 
 #include <boost/mp11/tuple.hpp>
+#include "stringhash.hpp"
+
 extern "C" {
 void ret(void *res, size_t len);
 }
@@ -59,7 +61,7 @@ namespace ontio {
 
  // Helper macro for ONTIO_DISPATCH_INTERNAL
  #define ONTIO_DISPATCH_INTERNAL( r, OP, elem ) \
-   case ontio::name( BOOST_PP_STRINGIZE(elem)  ).value: \
+	case __hash_string__::hash_at_compile_time( BOOST_PP_STRINGIZE(elem) ) : \
        ontio::execute_action( ds, &OP::elem ); \
        break;
 
@@ -88,24 +90,16 @@ extern "C" { \
    void apply(void) {  \
       std::string method; \
       size_t size = input_length(); \
-      constexpr size_t max_stack_buffer_size = 512; \
-      void* buffer = nullptr; \
-      if( size > 0 ) { \
-         buffer = max_stack_buffer_size < size ? malloc(size) : alloca(size); \
-         get_input( buffer ); \
-      } \
-      datastream<const char*> ds((char*)buffer, size); \
+	  std::vector<char> input; \
+	  input.resize(size); \
+      get_input(input.data()); \
+      datastream<const char*> ds(input.data(), input.size()); \
       ds >> method; \
-      std::string method_t; 	\
-      uint64_t action = ontio::name(method).value; 	\
-      switch( action ) { \
+      switch(__hash_string__::string_hash(method) ) { \
           ONTIO_DISPATCH_HELPER( TYPE, MEMBERS ) \
       } \
-      if ( max_stack_buffer_size < size ) { \
-         free(buffer); \
-      } \
    } \
-} 
+}
 #else
 #define ONTIO_DISPATCH( TYPE, MEMBERS ) \
 extern "C" { \
@@ -117,9 +111,7 @@ extern "C" { \
       get_input(input.data()); \
       datastream<const char*> ds(input.data(), input.size()); \
       ds >> method; \
-      std::string method_t; 	\
-      uint64_t action = ontio::name(method).value; 	\
-      switch( action ) { \
+      switch(__hash_string__::string_hash(method) ) { \
           ONTIO_DISPATCH_HELPER( TYPE, MEMBERS ) \
       } \
    } \
