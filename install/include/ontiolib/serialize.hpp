@@ -54,4 +54,24 @@
     ds >> static_cast<BASE&>(t); \
     return ds BOOST_PP_SEQ_FOR_EACH( ONTLIB_REFLECT_MEMBER_OP, >>, MEMBERS );\
  }
+
+/**
+ *  Defines serialization and deserialization for a class which inherits from other classes that
+ *  have their serialization and deserialization defined
+ *
+ *  @brief Defines serialization and deserialization for a class which inherits from other classes that
+ *  have their serialization and deserialization defined
+ *
+ *  @param TYPE - the class to have its serialization and deserialization defined
+ *  @param BASE - a sequence of base class names (basea)(baseb)(basec)
+ */
+#define ONTLIB_SERIALIZE_DERIVED_NOMEMBER( TYPE, BASE ) \
+ template<typename DataStream> \
+ friend DataStream& operator << ( DataStream& ds, const TYPE& t ){ \
+    return ds << static_cast<const BASE&>(t); \
+ }\
+ template<typename DataStream> \
+ friend DataStream& operator >> ( DataStream& ds, TYPE& t ){ \
+    return ds >> static_cast<BASE&>(t); \
+ }
 ///@} serializecpp

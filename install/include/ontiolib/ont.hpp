@@ -1,10 +1,12 @@
 #pragma once
 
+namespace ontio {
 #define ADDRLENGTH 20
-typedef std::array<uint8_t, 32> H256;
-typedef std::array<uint8_t, 20> H160;
-typedef H160 address;
-typedef std::vector<char> key;
+using H256 = std::array<uint8_t, 32>;
+using H160 = std::array<uint8_t, 20>;
+using address = std::array<uint8_t, 20>;
+using key = std::vector<char>;
+}
 
 #include "asset.hpp"
 #include "service.hpp"

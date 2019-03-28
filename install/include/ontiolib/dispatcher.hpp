@@ -37,7 +37,7 @@ namespace ontio {
       T inst(ds);
 
       auto f2 = [&]( auto... a ) {
-         R t = ((&inst)->*func)( a... );
+         R&& t = ((&inst)->*func)( a... );
 		 auto data = pack<R>(t);
 		 ::ret(data.data(), data.size()); 
       };
