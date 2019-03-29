@@ -7,21 +7,11 @@ address self_address(void);
 address caller_address(void);
 address entry_address(void);
 std::vector<char> get_input(void);
-bool check_witness(address &v);
+bool check_witness(const address &v);
 H256 current_blockhash(void);
 H256 current_txhash(void);
-void notify(std::string s);
-address contract_migrate(std::vector<char> &code, uint32_t vmtype, std::string name, std::string version, std::string author, std::string email, std::string desc);
-void storage_delete(key key);
-
-template<typename T>
-void ret(T &t);
-template<typename T>
-void call_contract(address &addr, std::vector<char> &v, T &t);
-template<typename T>
-bool storage_read(key key, T &val);
-template<typename T>
-void storage_write(key key, T &val);
+void notify(const std::string &s);
+address contract_migrate(const std::vector<char> &code, const uint32_t &vmtype, const std::string &name, const std::string &version, const std::string &author, const std::string &email, const std::string &desc);
 
 address self_address(void) {
 	address t;
@@ -49,7 +39,7 @@ std::vector<char>  get_input(void) {
 	return result;
 }
 
-bool check_witness(address &v) {
+bool check_witness(const address &v) {
 	uint32_t auth = ::check_witness(v.data());
 	return bool(auth);
 }
@@ -67,17 +57,17 @@ H256 current_txhash(void) {
 }
 
 template<typename T>
-void ret(T &t) {
+void ret(const T &t) {
 	auto data = pack(t);
 	::ret(data.data(), data.size()); 
 }
 
-void notify(std::string s) {
+void notify(const std::string &s) {
 	::notify(s.data(), s.size());
 }
 
 template<typename T>
-void call_native(address &addr, std::vector<char> &v, T &t) {
+void call_native(const address &addr, const std::vector<char> &v, T &t) {
 	size_t outputlen;
 	outputlen = ::call_contract((void*)addr.data(), v.data(), v.size());
 
@@ -88,7 +78,7 @@ void call_native(address &addr, std::vector<char> &v, T &t) {
 
 /* if type T is a vector or map. the length only can get from outputlen. */
 template<typename T>
-void call_contract(address &addr, std::vector<char> &v, T &t) {
+void call_contract(const address &addr, const std::vector<char> &v, T &t) {
 	size_t outputlen = ::call_contract((void*)addr.data(), v.data(), v.size());
 	std::vector<char> res;
 	res.resize(outputlen);
@@ -105,7 +95,7 @@ void get_call_output(T &t) {
 	t = unpack<T>(res);
 }
 
-address contract_migrate(std::vector<char> &code, uint32_t vmtype, std::string name, std::string version, std::string author, std::string email, std::string desc) {
+address contract_migrate(const std::vector<char> &code, const uint32_t &vmtype, const std::string &name, const std::string &version, const std::string &author, const std::string &email, const std::string &desc) {
 	address addr;
 	size_t len = ::contract_migrate(code.data(), code.size(), vmtype, name.data(), name.size(), version.data(), version.size(), author.data(), author.size(), email.data(), email.size(), desc.data(), desc.size(), addr.data());
 	ontio_assert(len == ADDRLENGTH, "contract_migrateerror. address must be 20 bytes.");
@@ -114,7 +104,7 @@ address contract_migrate(std::vector<char> &code, uint32_t vmtype, std::string n
 
 /* similar with call_contract, then get the output. the val length also can not assure by smartcontract. like std::vector, std::map. etc. this will get any num element. */
 template<typename T>
-bool storage_get(key key, T &val) {
+bool storage_get(const key &key, T &val) {
 	std::vector<char> s;
 	size_t initlength = 32;
 	s.resize(initlength);
@@ -136,12 +126,12 @@ bool storage_get(key key, T &val) {
 }
 
 template<typename T>
-void storage_put(key key, T &&val) {
+void storage_put(const key &key, const T &val) {
 	auto data = pack(val);
 	::storage_write(key.data(), key.size(), data.data(), data.size());
 }
 
-void storage_delete(key key) {
+void storage_delete(const key& key) {
 	::storage_delete(key.data(), key.size());
 }
 

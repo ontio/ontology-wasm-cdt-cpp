@@ -44,7 +44,7 @@ struct unsigned_int {
     template<typename DataStream>
     friend DataStream& operator << ( DataStream& ds, const unsigned_int& v ){
 	uint64_t val = v.value;
-        WriteVarUint(ds, val);
+    WriteVarUint(ds, val);
 	return ds;
     }
 

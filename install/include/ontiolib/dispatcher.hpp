@@ -15,7 +15,7 @@
 #include "stringhash.hpp"
 
 extern "C" {
-void ret(void *res, size_t len);
+void ret(const void *res, const size_t len);
 }
 
 namespace ontio {

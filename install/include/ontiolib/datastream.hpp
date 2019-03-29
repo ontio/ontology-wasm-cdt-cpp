@@ -1165,7 +1165,7 @@ std::vector<char> pack(Args&&... args) {
 }
 
 template<typename Stream>
-inline void WriteVarUint( datastream<Stream>& ds, uint64_t & v ) {
+inline void WriteVarUint( datastream<Stream>& ds, const uint64_t & v ) {
 	if (v < 0xFD){
 		uint8_t t = uint8_t(v);
 		ds << t;
