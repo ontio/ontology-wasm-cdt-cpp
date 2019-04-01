@@ -27,8 +27,8 @@ export PATH=$PATH:${your_install_dir}/bin
 ##### b. install by deb
 
 ```
-wget https://github.com/ontio/ontology-wasm-cdt-cpp/blob/master/pkg/ontwasm-ubuntu18.04-amd64.deb?raw=true
-dpkg -i ontwasm-ubuntu18.04-amd64.deb?raw=true
+wget https://github.com/ontio/ontology-wasm-cdt-cpp/blob/master/pkg/ontowasm-ubuntu18.04-amd64.deb?raw=true
+dpkg -i ontowasm-ubuntu18.04-amd64.deb?raw=true
 export PATH=$PATH:/ontowasm
 ```
 
