@@ -1,0 +1,10 @@
+Package: ontology-wasm
+Version: 1.0
+Section: steven
+Priority: optional 
+Depends: python3
+Suggests: 
+Architecture: amd64
+Maintainer: steven
+Provides: 
+Description: ontology wasm development tool.
