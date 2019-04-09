@@ -4,6 +4,7 @@
 extern "C" {
 #endif
 
+#ifdef NO_ONTOLOGY_WASM
 #include <features.h>
 
 #define __NEED_dev_t
@@ -19,6 +20,12 @@ extern "C" {
 #define __NEED_struct_timespec
 
 #include <bits/alltypes.h>
+
+#include <bits/stat.h>
+
+#define st_atime st_atim.tv_sec
+#define st_mtime st_mtim.tv_sec
+#define st_ctime st_ctim.tv_sec
 
 #define S_IFMT  0170000
 
@@ -64,8 +71,49 @@ extern "C" {
 #define UTIME_NOW  0x3fffffff
 #define UTIME_OMIT 0x3ffffffe
 
+int stat(const char *__restrict, struct stat *__restrict);
+int fstat(int, struct stat *);
+int lstat(const char *__restrict, struct stat *__restrict);
+int fstatat(int, const char *__restrict, struct stat *__restrict, int);
+int chmod(const char *, mode_t);
+int fchmod(int, mode_t);
+int fchmodat(int, const char *, mode_t, int);
+mode_t umask(mode_t);
+int mkdir(const char *, mode_t);
+int mkfifo(const char *, mode_t);
+int mkdirat(int, const char *, mode_t);
+int mkfifoat(int, const char *, mode_t);
+
+#if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+int mknod(const char *, mode_t, dev_t);
+int mknodat(int, const char *, mode_t, dev_t);
+#endif
+
 int futimens(int, const struct timespec [2]);
 int utimensat(int, const char *, const struct timespec [2], int);
+
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+int lchmod(const char *, mode_t);
+#define S_IREAD S_IRUSR
+#define S_IWRITE S_IWUSR
+#define S_IEXEC S_IXUSR
+#endif
+
+#if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
+#define stat64 stat
+#define fstat64 fstat
+#define lstat64 lstat
+#define fstatat64 fstatat
+#define blkcnt64_t blkcnt_t
+#define fsblkcnt64_t fsblkcnt_t
+#define fsfilcnt64_t fsfilcnt_t
+#define ino64_t ino_t
+#define off64_t off_t
+#endif
+#else
+#include <features.h>
+#include <bits/alltypes.h>
+#endif
 
 #ifdef __cplusplus
 }

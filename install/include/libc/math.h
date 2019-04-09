@@ -27,7 +27,7 @@ extern "C" {
 #define MATH_ERREXCEPT 2
 #define math_errhandling 2
 
-#define FP_ILOGBNAN (-1-(int)(((unsigned)-1)>>1))
+#define FP_ILOGBNAN (-1-0x7fffffff)
 #define FP_ILOGB0 FP_ILOGBNAN
 
 #define FP_NAN       0
@@ -201,8 +201,10 @@ float       floorf(float);
 long double floorl(long double);
 
 double      fma(double, double, double);
-   //float       fmaf(float, float, float);
-   //long double fmal(long double, long double, long double);
+#ifdef NO_ONTOLOGY_WASM
+float       fmaf(float, float, float);
+long double fmal(long double, long double, long double);
+#endif
 
 double      fmax(double, double);
 float       fmaxf(float, float);

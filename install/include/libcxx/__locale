@@ -1,10 +1,9 @@
 // -*- C++ -*-
 //===----------------------------------------------------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
@@ -20,15 +19,12 @@
 #include <cctype>
 #include <locale.h>
 #if defined(_LIBCPP_MSVCRT_LIKE)
+# include <cstring>
 # include <support/win32/locale_win32.h>
 #elif defined(_AIX)
 # include <support/ibm/xlocale.h>
 #elif defined(__ANDROID__)
-// Android gained the locale aware functions in L (API level 21)
-# include <android/api-level.h>
-# if __ANDROID_API__ <= 20
-#  include <support/android/locale_bionic.h>
-# endif
+# include <support/android/locale_bionic.h>
 #elif defined(__sun__)
 # include <xlocale.h>
 # include <support/solaris/xlocale.h>
@@ -49,7 +45,7 @@
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 
-#if !defined(_LIBCPP_LOCALE__L_EXTENSIONS) || defined(_LIBCPP_MSVCRT)
+#if !defined(_LIBCPP_LOCALE__L_EXTENSIONS)
 struct __libcpp_locale_guard {
   _LIBCPP_INLINE_VISIBILITY
   __libcpp_locale_guard(locale_t& __loc) : __old_loc_(uselocale(__loc)) {}
@@ -64,6 +60,45 @@ struct __libcpp_locale_guard {
 private:
   __libcpp_locale_guard(__libcpp_locale_guard const&);
   __libcpp_locale_guard& operator=(__libcpp_locale_guard const&);
+};
+#elif defined(_LIBCPP_MSVCRT_LIKE)
+struct __libcpp_locale_guard {
+    __libcpp_locale_guard(locale_t __l) :
+        __status(_configthreadlocale(_ENABLE_PER_THREAD_LOCALE)) {
+      // Setting the locale can be expensive even when the locale given is
+      // already the current locale, so do an explicit check to see if the
+      // current locale is already the one we want.
+      const char* __lc = __setlocale(nullptr);
+      // If every category is the same, the locale string will simply be the
+      // locale name, otherwise it will be a semicolon-separated string listing
+      // each category.  In the second case, we know at least one category won't
+      // be what we want, so we only have to check the first case.
+      if (strcmp(__l.__get_locale(), __lc) != 0) {
+        __locale_all = _strdup(__lc);
+        if (__locale_all == nullptr)
+          __throw_bad_alloc();
+        __setlocale(__l.__get_locale());
+      }
+    }
+    ~__libcpp_locale_guard() {
+      // The CRT documentation doesn't explicitly say, but setlocale() does the
+      // right thing when given a semicolon-separated list of locale settings
+      // for the different categories in the same format as returned by
+      // setlocale(LC_ALL, nullptr).
+      if (__locale_all != nullptr) {
+        __setlocale(__locale_all);
+        free(__locale_all);
+      }
+      _configthreadlocale(__status);
+    }
+    static const char* __setlocale(const char* __locale) {
+      const char* __new_locale = setlocale(LC_ALL, __locale);
+      if (__new_locale == nullptr)
+        __throw_bad_alloc();
+      return __new_locale;
+    }
+    int __status;
+    char* __locale_all = nullptr;
 };
 #endif
 
@@ -233,7 +268,10 @@ public:
         return do_compare(__lo1, __hi1, __lo2, __hi2);
     }
 
+    // FIXME(EricWF): The _LIBCPP_ALWAYS_INLINE is needed on Windows to work
+    // around a dllimport bug that expects an external instantiation.
     _LIBCPP_INLINE_VISIBILITY
+    _LIBCPP_ALWAYS_INLINE
     string_type transform(const char_type* __lo, const char_type* __hi) const
     {
         return do_transform(__lo, __hi);
@@ -447,7 +485,7 @@ public:
     static const mask alnum  = alpha | digit;
     static const mask graph  = alnum | punct;
 
-    _LIBCPP_ALWAYS_INLINE ctype_base() {}
+    _LIBCPP_INLINE_VISIBILITY ctype_base() {}
 };
 
 template <class _CharT> class _LIBCPP_TEMPLATE_VIS ctype;
@@ -460,77 +498,77 @@ class _LIBCPP_TYPE_VIS ctype<wchar_t>
 public:
     typedef wchar_t char_type;
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     explicit ctype(size_t __refs = 0)
         : locale::facet(__refs) {}
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     bool is(mask __m, char_type __c) const
     {
         return do_is(__m, __c);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     const char_type* is(const char_type* __low, const char_type* __high, mask* __vec) const
     {
         return do_is(__low, __high, __vec);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     const char_type* scan_is(mask __m, const char_type* __low, const char_type* __high) const
     {
         return do_scan_is(__m, __low, __high);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     const char_type* scan_not(mask __m, const char_type* __low, const char_type* __high) const
     {
         return do_scan_not(__m, __low, __high);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     char_type toupper(char_type __c) const
     {
         return do_toupper(__c);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     const char_type* toupper(char_type* __low, const char_type* __high) const
     {
         return do_toupper(__low, __high);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     char_type tolower(char_type __c) const
     {
         return do_tolower(__c);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     const char_type* tolower(char_type* __low, const char_type* __high) const
     {
         return do_tolower(__low, __high);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     char_type widen(char __c) const
     {
         return do_widen(__c);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     const char* widen(const char* __low, const char* __high, char_type* __to) const
     {
         return do_widen(__low, __high, __to);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     char narrow(char_type __c, char __dfault) const
     {
         return do_narrow(__c, __dfault);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     const char_type* narrow(const char_type* __low, const char_type* __high, char __dfault, char* __to) const
     {
         return do_narrow(__low, __high, __dfault, __to);
@@ -565,13 +603,13 @@ public:
 
     explicit ctype(const mask* __tab = 0, bool __del = false, size_t __refs = 0);
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     bool is(mask __m, char_type __c) const
     {
         return isascii(__c) ? (__tab_[static_cast<int>(__c)] & __m) !=0 : false;
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     const char_type* is(const char_type* __low, const char_type* __high, mask* __vec) const
     {
         for (; __low != __high; ++__low, ++__vec)
@@ -579,7 +617,7 @@ public:
         return __low;
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     const char_type* scan_is (mask __m, const char_type* __low, const char_type* __high) const
     {
         for (; __low != __high; ++__low)
@@ -588,7 +626,7 @@ public:
         return __low;
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     const char_type* scan_not(mask __m, const char_type* __low, const char_type* __high) const
     {
         for (; __low != __high; ++__low)
@@ -597,49 +635,49 @@ public:
         return __low;
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     char_type toupper(char_type __c) const
     {
         return do_toupper(__c);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     const char_type* toupper(char_type* __low, const char_type* __high) const
     {
         return do_toupper(__low, __high);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     char_type tolower(char_type __c) const
     {
         return do_tolower(__c);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     const char_type* tolower(char_type* __low, const char_type* __high) const
     {
         return do_tolower(__low, __high);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     char_type widen(char __c) const
     {
         return do_widen(__c);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     const char* widen(const char* __low, const char* __high, char_type* __to) const
     {
         return do_widen(__low, __high, __to);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     char narrow(char_type __c, char __dfault) const
     {
         return do_narrow(__c, __dfault);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     const char* narrow(const char_type* __low, const char_type* __high, char __dfault, char* __to) const
     {
         return do_narrow(__low, __high, __dfault, __to);
@@ -652,7 +690,7 @@ public:
 #else
     static const size_t table_size = 256;  // FIXME: Don't hardcode this.
 #endif
-    _LIBCPP_ALWAYS_INLINE const mask* table() const  _NOEXCEPT {return __tab_;}
+    _LIBCPP_INLINE_VISIBILITY const mask* table() const  _NOEXCEPT {return __tab_;}
     static const mask* classic_table()  _NOEXCEPT;
 #if defined(__GLIBC__) || defined(__EMSCRIPTEN__)
     static const int* __classic_upper_table() _NOEXCEPT;
@@ -832,7 +870,7 @@ tolower(_CharT __c, const locale& __loc)
 class _LIBCPP_TYPE_VIS codecvt_base
 {
 public:
-    _LIBCPP_ALWAYS_INLINE codecvt_base() {}
+    _LIBCPP_INLINE_VISIBILITY codecvt_base() {}
     enum result {ok, partial, error, noconv};
 };
 
@@ -852,11 +890,11 @@ public:
     typedef char      extern_type;
     typedef mbstate_t state_type;
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     explicit codecvt(size_t __refs = 0)
         : locale::facet(__refs) {}
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     result out(state_type& __st,
                const intern_type* __frm, const intern_type* __frm_end, const intern_type*& __frm_nxt,
                extern_type* __to, extern_type* __to_end, extern_type*& __to_nxt) const
@@ -864,14 +902,14 @@ public:
         return do_out(__st, __frm, __frm_end, __frm_nxt, __to, __to_end, __to_nxt);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     result unshift(state_type& __st,
                    extern_type* __to, extern_type* __to_end, extern_type*& __to_nxt) const
     {
         return do_unshift(__st, __to, __to_end, __to_nxt);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     result in(state_type& __st,
               const extern_type* __frm, const extern_type* __frm_end, const extern_type*& __frm_nxt,
               intern_type* __to, intern_type* __to_end, intern_type*& __to_nxt) const
@@ -879,25 +917,25 @@ public:
         return do_in(__st, __frm, __frm_end, __frm_nxt, __to, __to_end, __to_nxt);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     int encoding() const  _NOEXCEPT
     {
         return do_encoding();
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     bool always_noconv() const  _NOEXCEPT
     {
         return do_always_noconv();
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     int length(state_type& __st, const extern_type* __frm, const extern_type* __end, size_t __mx) const
     {
         return do_length(__st, __frm, __end, __mx);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     int max_length() const  _NOEXCEPT
     {
         return do_max_length();
@@ -906,7 +944,7 @@ public:
     static locale::id id;
 
 protected:
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     explicit codecvt(const char*, size_t __refs = 0)
         : locale::facet(__refs) {}
 
@@ -941,7 +979,7 @@ public:
 
     explicit codecvt(size_t __refs = 0);
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     result out(state_type& __st,
                const intern_type* __frm, const intern_type* __frm_end, const intern_type*& __frm_nxt,
                extern_type* __to, extern_type* __to_end, extern_type*& __to_nxt) const
@@ -949,14 +987,14 @@ public:
         return do_out(__st, __frm, __frm_end, __frm_nxt, __to, __to_end, __to_nxt);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     result unshift(state_type& __st,
                    extern_type* __to, extern_type* __to_end, extern_type*& __to_nxt) const
     {
         return do_unshift(__st, __to, __to_end, __to_nxt);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     result in(state_type& __st,
               const extern_type* __frm, const extern_type* __frm_end, const extern_type*& __frm_nxt,
               intern_type* __to, intern_type* __to_end, intern_type*& __to_nxt) const
@@ -964,25 +1002,25 @@ public:
         return do_in(__st, __frm, __frm_end, __frm_nxt, __to, __to_end, __to_nxt);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     int encoding() const  _NOEXCEPT
     {
         return do_encoding();
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     bool always_noconv() const  _NOEXCEPT
     {
         return do_always_noconv();
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     int length(state_type& __st, const extern_type* __frm, const extern_type* __end, size_t __mx) const
     {
         return do_length(__st, __frm, __end, __mx);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     int max_length() const  _NOEXCEPT
     {
         return do_max_length();
@@ -1021,11 +1059,11 @@ public:
     typedef char      extern_type;
     typedef mbstate_t state_type;
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     explicit codecvt(size_t __refs = 0)
         : locale::facet(__refs) {}
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     result out(state_type& __st,
                const intern_type* __frm, const intern_type* __frm_end, const intern_type*& __frm_nxt,
                extern_type* __to, extern_type* __to_end, extern_type*& __to_nxt) const
@@ -1033,14 +1071,14 @@ public:
         return do_out(__st, __frm, __frm_end, __frm_nxt, __to, __to_end, __to_nxt);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     result unshift(state_type& __st,
                    extern_type* __to, extern_type* __to_end, extern_type*& __to_nxt) const
     {
         return do_unshift(__st, __to, __to_end, __to_nxt);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     result in(state_type& __st,
               const extern_type* __frm, const extern_type* __frm_end, const extern_type*& __frm_nxt,
               intern_type* __to, intern_type* __to_end, intern_type*& __to_nxt) const
@@ -1048,25 +1086,25 @@ public:
         return do_in(__st, __frm, __frm_end, __frm_nxt, __to, __to_end, __to_nxt);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     int encoding() const  _NOEXCEPT
     {
         return do_encoding();
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     bool always_noconv() const  _NOEXCEPT
     {
         return do_always_noconv();
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     int length(state_type& __st, const extern_type* __frm, const extern_type* __end, size_t __mx) const
     {
         return do_length(__st, __frm, __end, __mx);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     int max_length() const  _NOEXCEPT
     {
         return do_max_length();
@@ -1075,7 +1113,7 @@ public:
     static locale::id id;
 
 protected:
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     explicit codecvt(const char*, size_t __refs = 0)
         : locale::facet(__refs) {}
 
@@ -1107,11 +1145,11 @@ public:
     typedef char      extern_type;
     typedef mbstate_t state_type;
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     explicit codecvt(size_t __refs = 0)
         : locale::facet(__refs) {}
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     result out(state_type& __st,
                const intern_type* __frm, const intern_type* __frm_end, const intern_type*& __frm_nxt,
                extern_type* __to, extern_type* __to_end, extern_type*& __to_nxt) const
@@ -1119,14 +1157,14 @@ public:
         return do_out(__st, __frm, __frm_end, __frm_nxt, __to, __to_end, __to_nxt);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     result unshift(state_type& __st,
                    extern_type* __to, extern_type* __to_end, extern_type*& __to_nxt) const
     {
         return do_unshift(__st, __to, __to_end, __to_nxt);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     result in(state_type& __st,
               const extern_type* __frm, const extern_type* __frm_end, const extern_type*& __frm_nxt,
               intern_type* __to, intern_type* __to_end, intern_type*& __to_nxt) const
@@ -1134,25 +1172,25 @@ public:
         return do_in(__st, __frm, __frm_end, __frm_nxt, __to, __to_end, __to_nxt);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     int encoding() const  _NOEXCEPT
     {
         return do_encoding();
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     bool always_noconv() const  _NOEXCEPT
     {
         return do_always_noconv();
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     int length(state_type& __st, const extern_type* __frm, const extern_type* __end, size_t __mx) const
     {
         return do_length(__st, __frm, __end, __mx);
     }
 
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     int max_length() const  _NOEXCEPT
     {
         return do_max_length();
@@ -1161,7 +1199,7 @@ public:
     static locale::id id;
 
 protected:
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     explicit codecvt(const char*, size_t __refs = 0)
         : locale::facet(__refs) {}
 
@@ -1188,10 +1226,10 @@ class _LIBCPP_TEMPLATE_VIS codecvt_byname
     : public codecvt<_InternT, _ExternT, _StateT>
 {
 public:
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     explicit codecvt_byname(const char* __nm, size_t __refs = 0)
         : codecvt<_InternT, _ExternT, _StateT>(__nm, __refs) {}
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     explicit codecvt_byname(const string& __nm, size_t __refs = 0)
         : codecvt<_InternT, _ExternT, _StateT>(__nm.c_str(), __refs) {}
 protected:
@@ -1208,8 +1246,6 @@ _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_EXTERN_TEMPLATE_TYPE_VIS codecvt_byname<w
 _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_EXTERN_TEMPLATE_TYPE_VIS codecvt_byname<char16_t, char, mbstate_t>)
 _LIBCPP_EXTERN_TEMPLATE2(class _LIBCPP_EXTERN_TEMPLATE_TYPE_VIS codecvt_byname<char32_t, char, mbstate_t>)
 
-_LIBCPP_NORETURN _LIBCPP_FUNC_VIS void __throw_runtime_error(const char*);
-
 template <size_t _Np>
 struct __narrow_to_utf8
 {
@@ -1222,7 +1258,7 @@ template <>
 struct __narrow_to_utf8<8>
 {
     template <class _OutputIterator, class _CharT>
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _OutputIterator
     operator()(_OutputIterator __s, const _CharT* __wb, const _CharT* __we) const
     {
@@ -1233,16 +1269,16 @@ struct __narrow_to_utf8<8>
 };
 
 template <>
-struct __narrow_to_utf8<16>
+struct _LIBCPP_TEMPLATE_VIS __narrow_to_utf8<16>
     : public codecvt<char16_t, char, mbstate_t>
 {
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     __narrow_to_utf8() : codecvt<char16_t, char, mbstate_t>(1) {}
 
-    ~__narrow_to_utf8();
+    _LIBCPP_EXPORTED_FROM_ABI ~__narrow_to_utf8();
 
     template <class _OutputIterator, class _CharT>
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _OutputIterator
     operator()(_OutputIterator __s, const _CharT* __wb, const _CharT* __we) const
     {
@@ -1267,16 +1303,16 @@ struct __narrow_to_utf8<16>
 };
 
 template <>
-struct __narrow_to_utf8<32>
+struct _LIBCPP_TEMPLATE_VIS __narrow_to_utf8<32>
     : public codecvt<char32_t, char, mbstate_t>
 {
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     __narrow_to_utf8() : codecvt<char32_t, char, mbstate_t>(1) {}
 
-    ~__narrow_to_utf8();
+    _LIBCPP_EXPORTED_FROM_ABI ~__narrow_to_utf8();
 
     template <class _OutputIterator, class _CharT>
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _OutputIterator
     operator()(_OutputIterator __s, const _CharT* __wb, const _CharT* __we) const
     {
@@ -1312,7 +1348,7 @@ template <>
 struct __widen_from_utf8<8>
 {
     template <class _OutputIterator>
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _OutputIterator
     operator()(_OutputIterator __s, const char* __nb, const char* __ne) const
     {
@@ -1323,16 +1359,16 @@ struct __widen_from_utf8<8>
 };
 
 template <>
-struct __widen_from_utf8<16>
+struct _LIBCPP_TEMPLATE_VIS __widen_from_utf8<16>
     : public codecvt<char16_t, char, mbstate_t>
 {
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     __widen_from_utf8() : codecvt<char16_t, char, mbstate_t>(1) {}
 
-    ~__widen_from_utf8();
+    _LIBCPP_EXPORTED_FROM_ABI ~__widen_from_utf8();
 
     template <class _OutputIterator>
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _OutputIterator
     operator()(_OutputIterator __s, const char* __nb, const char* __ne) const
     {
@@ -1357,16 +1393,16 @@ struct __widen_from_utf8<16>
 };
 
 template <>
-struct __widen_from_utf8<32>
+struct _LIBCPP_TEMPLATE_VIS __widen_from_utf8<32>
     : public codecvt<char32_t, char, mbstate_t>
 {
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     __widen_from_utf8() : codecvt<char32_t, char, mbstate_t>(1) {}
 
-    ~__widen_from_utf8();
+    _LIBCPP_EXPORTED_FROM_ABI ~__widen_from_utf8();
 
     template <class _OutputIterator>
-    _LIBCPP_ALWAYS_INLINE
+    _LIBCPP_INLINE_VISIBILITY
     _OutputIterator
     operator()(_OutputIterator __s, const char* __nb, const char* __ne) const
     {
@@ -1404,11 +1440,11 @@ public:
 
     explicit numpunct(size_t __refs = 0);
 
-    _LIBCPP_ALWAYS_INLINE char_type decimal_point() const {return do_decimal_point();}
-    _LIBCPP_ALWAYS_INLINE char_type thousands_sep() const {return do_thousands_sep();}
-    _LIBCPP_ALWAYS_INLINE string grouping() const         {return do_grouping();}
-    _LIBCPP_ALWAYS_INLINE string_type truename() const    {return do_truename();}
-    _LIBCPP_ALWAYS_INLINE string_type falsename() const   {return do_falsename();}
+    _LIBCPP_INLINE_VISIBILITY char_type decimal_point() const {return do_decimal_point();}
+    _LIBCPP_INLINE_VISIBILITY char_type thousands_sep() const {return do_thousands_sep();}
+    _LIBCPP_INLINE_VISIBILITY string grouping() const         {return do_grouping();}
+    _LIBCPP_INLINE_VISIBILITY string_type truename() const    {return do_truename();}
+    _LIBCPP_INLINE_VISIBILITY string_type falsename() const   {return do_falsename();}
 
     static locale::id id;
 
@@ -1435,11 +1471,11 @@ public:
 
     explicit numpunct(size_t __refs = 0);
 
-    _LIBCPP_ALWAYS_INLINE char_type decimal_point() const {return do_decimal_point();}
-    _LIBCPP_ALWAYS_INLINE char_type thousands_sep() const {return do_thousands_sep();}
-    _LIBCPP_ALWAYS_INLINE string grouping() const         {return do_grouping();}
-    _LIBCPP_ALWAYS_INLINE string_type truename() const    {return do_truename();}
-    _LIBCPP_ALWAYS_INLINE string_type falsename() const   {return do_falsename();}
+    _LIBCPP_INLINE_VISIBILITY char_type decimal_point() const {return do_decimal_point();}
+    _LIBCPP_INLINE_VISIBILITY char_type thousands_sep() const {return do_thousands_sep();}
+    _LIBCPP_INLINE_VISIBILITY string grouping() const         {return do_grouping();}
+    _LIBCPP_INLINE_VISIBILITY string_type truename() const    {return do_truename();}
+    _LIBCPP_INLINE_VISIBILITY string_type falsename() const   {return do_falsename();}
 
     static locale::id id;
 

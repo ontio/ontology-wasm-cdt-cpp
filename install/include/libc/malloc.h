@@ -13,8 +13,14 @@ void *malloc (size_t);
 void *calloc (size_t, size_t);
 void *realloc (void *, size_t);
 void free (void *);
-
+#ifdef NO_ONTOLOGY_WASM
+void *valloc (size_t);
+#endif
 void *memalign(size_t, size_t);
+
+#ifdef NO_ONTOLOGY_WASM
+size_t malloc_usable_size(void *);
+#endif
 
 #ifdef __cplusplus
 }

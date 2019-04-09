@@ -1,0 +1,6 @@
+[submodule "src/lib/libc++/libcxx"]
+	path = src/lib/libc++/libcxx
+	url = https://github.com/ontio/libcxx-mirror
+[submodule "src/lib/libc/musl"]
+	path = src/lib/libc/musl
+	url = https://github.com/ontio/musl-mirror

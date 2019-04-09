@@ -1,10 +1,9 @@
 // -*- C++ -*-
 //===--------------------------- cstdlib ----------------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
@@ -120,6 +119,10 @@ using ::strtoul;
 #ifndef _LIBCPP_HAS_NO_LONG_LONG
 using ::strtoull;
 #endif // _LIBCPP_HAS_NO_LONG_LONG
+#ifdef NO_ONTOLOGY_WASM
+using ::rand;
+using ::srand;
+#endif
 using ::calloc;
 using ::free;
 using ::malloc;
@@ -149,11 +152,11 @@ using ::mbtowc;
 using ::wctomb;
 using ::mbstowcs;
 using ::wcstombs;
-#ifdef _LIBCPP_HAS_QUICK_EXIT
+#if !defined(_LIBCPP_CXX03_LANG) && defined(_LIBCPP_HAS_QUICK_EXIT)
 using ::at_quick_exit;
 using ::quick_exit;
 #endif
-#ifdef _LIBCPP_HAS_C11_FEATURES
+#if _LIBCPP_STD_VER > 14 && defined(_LIBCPP_HAS_C11_FEATURES)
 using ::aligned_alloc;
 #endif
 

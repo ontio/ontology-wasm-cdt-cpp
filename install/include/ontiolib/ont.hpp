@@ -4,8 +4,46 @@ namespace ontio {
 #define ADDRLENGTH 20
 using H256 = std::array<uint8_t, 32>;
 using H160 = std::array<uint8_t, 20>;
-using address = std::array<uint8_t, 20>;
 using key = std::vector<char>;
+using std::array;
+using std::string;
+
+class address : public H160 {
+	public:
+	string tohexstring(void) {
+		string s;
+		s.resize(40);
+		int index = 0;
+		for(auto it = begin(); it != end(); it++) {
+			uint8_t high = *it/16, low = *it%16;
+			s[index] = (high<10) ? ('0' + high) : ('a' + high - 10);
+			s[index + 1] = (low<10) ? ('0' + low) : ('a' + low - 10);
+			index += 2;
+		}
+		return s;
+	}
+
+	void debugout(void) {
+		for(auto it = begin(); it != end(); it++) {
+			printf("%02x", *it);
+		}
+		printf("\n");
+	}
+
+	friend bool operator==(const address& x, const address& y);
+	friend bool operator!=(const address& x, const address& y);
+
+	ONTLIB_SERIALIZE_DERIVED_NOMEMBER(address, H160 )
+};
+
+bool operator==(const address& x, const address& y) {
+	return std::equal(x.__elems_, x.__elems_ + 20, y.__elems_);
+}
+
+bool operator!=(const address& x, const address& y) {
+    return !(x == y);
+}
+
 }
 
 #include "asset.hpp"

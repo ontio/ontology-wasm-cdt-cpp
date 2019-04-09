@@ -1,10 +1,9 @@
 // -*- C++ -*-
 //===---------------------------- cmath -----------------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
@@ -303,6 +302,7 @@ long double    truncl(long double x);
 
 #include <__config>
 #include <math.h>
+#include <version>
 
 #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
 #pragma GCC system_header
@@ -408,7 +408,9 @@ using ::expm1;
 using ::expm1f;
 using ::fdim;
 using ::fdimf;
-//using ::fmaf;
+#ifdef NO_ONTOLOGY_WASM
+using ::fmaf;
+#endif
 using ::fma;
 using ::fmax;
 using ::fmaxf;
@@ -496,7 +498,9 @@ using ::erfcl;
 using ::exp2l;
 using ::expm1l;
 using ::fdiml;
-//using ::fmal;
+#ifdef NO_ONTOLOGY_WASM
+using ::fmal;
+#endif
 using ::fmaxl;
 using ::fminl;
 using ::hypotl;
@@ -547,7 +551,7 @@ hypot(_A1 __lcpp_x, _A2 __lcpp_y, _A3 __lcpp_z) _NOEXCEPT
 #endif
 
 template <class _A1>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 _LIBCPP_CONSTEXPR typename enable_if<is_floating_point<_A1>::value, bool>::type
 __libcpp_isnan_or_builtin(_A1 __lcpp_x) _NOEXCEPT
 {
@@ -559,7 +563,7 @@ __libcpp_isnan_or_builtin(_A1 __lcpp_x) _NOEXCEPT
 }
 
 template <class _A1>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 _LIBCPP_CONSTEXPR typename enable_if<!is_floating_point<_A1>::value, bool>::type
 __libcpp_isnan_or_builtin(_A1 __lcpp_x) _NOEXCEPT
 {
@@ -567,7 +571,7 @@ __libcpp_isnan_or_builtin(_A1 __lcpp_x) _NOEXCEPT
 }
 
 template <class _A1>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 _LIBCPP_CONSTEXPR typename enable_if<is_floating_point<_A1>::value, bool>::type
 __libcpp_isinf_or_builtin(_A1 __lcpp_x) _NOEXCEPT
 {
@@ -579,7 +583,7 @@ __libcpp_isinf_or_builtin(_A1 __lcpp_x) _NOEXCEPT
 }
 
 template <class _A1>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 _LIBCPP_CONSTEXPR typename enable_if<!is_floating_point<_A1>::value, bool>::type
 __libcpp_isinf_or_builtin(_A1 __lcpp_x) _NOEXCEPT
 {
@@ -587,7 +591,7 @@ __libcpp_isinf_or_builtin(_A1 __lcpp_x) _NOEXCEPT
 }
 
 template <class _A1>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 _LIBCPP_CONSTEXPR typename enable_if<is_floating_point<_A1>::value, bool>::type
 __libcpp_isfinite_or_builtin(_A1 __lcpp_x) _NOEXCEPT
 {
@@ -599,7 +603,7 @@ __libcpp_isfinite_or_builtin(_A1 __lcpp_x) _NOEXCEPT
 }
 
 template <class _A1>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 _LIBCPP_CONSTEXPR typename enable_if<!is_floating_point<_A1>::value, bool>::type
 __libcpp_isfinite_or_builtin(_A1 __lcpp_x) _NOEXCEPT
 {

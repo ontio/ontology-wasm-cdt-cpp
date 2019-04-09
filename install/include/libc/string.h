@@ -82,6 +82,7 @@ void *memccpy (void *__restrict, const void *__restrict, int, size_t);
 char *strsep(char **, const char *);
 size_t strlcat (char *, const char *, size_t);
 size_t strlcpy (char *, const char *, size_t);
+void explicit_bzero (void *, size_t);
 #endif
 
 #ifdef _GNU_SOURCE
@@ -93,6 +94,9 @@ void *memmem(const void *, size_t, const void *, size_t);
 void *memrchr(const void *, int, size_t);
 void *mempcpy(void *, const void *, size_t);
 #ifndef __cplusplus
+#ifdef NO_ONTOLOGY_WASM
+char *basename();
+#endif
 #endif
 #endif
 
