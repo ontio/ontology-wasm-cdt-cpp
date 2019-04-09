@@ -19,6 +19,71 @@ void ret(const void *res, const size_t len);
 }
 
 namespace ontio {
+#ifdef WASM_USE_SYS_KEYTABLE
+using std::set;
+using std::string;
+using std::pair;
+using H256 = std::array<uint8_t, 32>;
+using H160 = std::array<uint8_t, 20>;
+using key = std::vector<char>;
+using std::array;
+using std::string;
+template<typename T> bool storage_get(const key &key, T &val);
+template<typename T> void storage_put(const key &key, const T &val);
+
+class keytable :private set<string> {
+	private:
+	public:
+		using set::set;
+		using set::begin;
+		using set::end;
+
+		static bool load(const string &tablename, keytable &t) {
+			return storage_get(pack(tablename), t);
+		}
+
+		static void commit(const string &tablename, const keytable &t) {
+			storage_put(pack(tablename), t);
+		}
+
+		template<typename T>
+		bool get(const string &t, T &v) {
+			auto it = find(t);
+			if (it != end()) {
+				string s(*it);
+				if(storage_get(pack(s), v))
+					return true;
+			}
+			return false;
+		}
+
+		template<typename T>
+		void put(const string &t, const T &v) {
+			insert(t);
+			storage_put(pack(t),v);
+		}
+
+		void erase(const string &t) {
+			set::erase(t);
+			void storage_delete(const key& key);
+			storage_delete(pack(t));
+		}
+
+		auto prefixwith(const string &t) {
+			auto itlow = lower_bound(t);
+			uint16_t a = 0xff;
+			string s;
+			s.resize(1);
+			memcpy(s.data(),&a, s.size());
+			auto itupper = lower_bound(t + s);
+
+			pair<set<string>::iterator, set<string>::iterator> p(itlow, --itupper);
+			return p;
+		}
+
+		ONTLIB_SERIALIZE_DERIVED_NOMEMBER(keytable, set<string> )
+};
+#endif
      /**
     * Unpack the received action and execute the correponding action handler
     *
@@ -34,7 +99,13 @@ namespace ontio {
       std::tuple<std::decay_t<Args>...> args;
       ds >> args;
 
-      T inst(ds);
+#ifdef WASM_USE_SYS_KEYTABLE
+	  class keytable syskt;
+	  keytable::load("###syskt###", syskt);
+      T inst(syskt);
+#else
+      T inst;
+#endif
 
       auto f2 = [&]( auto... a ) {
          R&& t = ((&inst)->*func)( a... );
@@ -43,6 +114,9 @@ namespace ontio {
       };
 
       boost::mp11::tuple_apply( f2, args );
+#ifdef WASM_USE_SYS_KEYTABLE
+	  keytable::commit("###syskt###", syskt);
+#endif
    }
 
    template<typename T, typename... Args>
@@ -50,13 +124,22 @@ namespace ontio {
       std::tuple<std::decay_t<Args>...> args;
       ds >> args;
 
-      T inst(ds);
+#ifdef WASM_USE_SYS_KEYTABLE
+	  class keytable syskt;
+	  keytable::load("###syskt###", syskt);
+      T inst(syskt);
+#else
+      T inst;
+#endif
 
       auto f2 = [&]( auto... a ) {
          ((&inst)->*func)( a... );
       };
 
       boost::mp11::tuple_apply( f2, args );
+#ifdef WASM_USE_SYS_KEYTABLE
+	  keytable::commit("###syskt###", syskt);
+#endif
    }
 
  // Helper macro for ONTIO_DISPATCH_INTERNAL

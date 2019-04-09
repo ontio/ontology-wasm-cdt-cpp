@@ -32,12 +32,17 @@ unsigned long strtoul (const char *__restrict, char **__restrict, int);
 long long strtoll (const char *__restrict, char **__restrict, int);
 unsigned long long strtoull (const char *__restrict, char **__restrict, int);
 
+#ifdef NO_ONTOLOGY_WASM
+int rand (void);
+void srand (unsigned);
+#endif
+
 void *malloc (size_t);
 void *calloc (size_t, size_t);
 void *realloc (void *, size_t);
 void free (void *);
-
 void *aligned_alloc(size_t, size_t);
+
 _Noreturn void abort (void);
 int atexit (void (*) (void));
 _Noreturn void exit (int);
@@ -83,21 +88,79 @@ size_t __ctype_get_mb_cur_max(void);
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
  || defined(_BSD_SOURCE)
 
+#ifdef NO_ONTOLOGY_WASM
+#define WNOHANG    1
+#define WUNTRACED  2
+
+#define WEXITSTATUS(s) (((s) & 0xff00) >> 8)
+#define WTERMSIG(s) ((s) & 0x7f)
+#define WSTOPSIG(s) WEXITSTATUS(s)
+#define WIFEXITED(s) (!WTERMSIG(s))
+#define WIFSTOPPED(s) ((short)((((s)&0xffff)*0x10001)>>8) > 0x7f00)
+#define WIFSIGNALED(s) (((s)&0xffff)-1U < 0xffu)
+#endif
+
 int posix_memalign (void **, size_t, size_t);
 int setenv (const char *, const char *, int);
 int unsetenv (const char *);
+#ifdef NO_ONTOLOGY_WASM
+int mkstemp (char *);
+int mkostemp (char *, int);
+char *mkdtemp (char *);
+#endif
 int getsubopt (char **, char *const *, char **);
+#ifdef NO_ONTOLOGY_WASM
+int rand_r (unsigned *);
+#endif
 
 #endif
 
+
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
  || defined(_BSD_SOURCE)
+#ifdef NO_ONTOLOGY_WASM
+char *realpath (const char *__restrict, char *__restrict);
+long int random (void);
+void srandom (unsigned int);
+char *initstate (unsigned int, char *, size_t);
+char *setstate (char *);
+#endif
 int putenv (char *);
+#ifdef NO_ONTOLOGY_WASM
+int posix_openpt (int);
+int grantpt (int);
+int unlockpt (int);
+char *ptsname (int);
+char *l64a (long);
+long a64l (const char *);
+void setkey (const char *);
+double drand48 (void);
+double erand48 (unsigned short [3]);
+long int lrand48 (void);
+long int nrand48 (unsigned short [3]);
+long mrand48 (void);
+long jrand48 (unsigned short [3]);
+void srand48 (long);
+unsigned short *seed48 (unsigned short [3]);
+void lcong48 (unsigned short [7]);
+#endif
 #endif
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 #include <alloca.h>
+#ifdef NO_ONTOLOGY_WASM
+char *mktemp (char *);
+int mkstemps (char *, int);
+int mkostemps (char *, int, int);
+void *valloc (size_t);
+void *memalign(size_t, size_t);
+int getloadavg(double *, int);
+#endif
 int clearenv(void);
+#ifdef NO_ONTOLOGY_WASM
+#define WCOREDUMP(s) ((s) & 0x80)
+#define WIFCONTINUED(s) ((s) == 0xffff)
+#endif
 #endif
 
 #ifdef _GNU_SOURCE
@@ -106,9 +169,22 @@ char *ecvt(double, int, int *, int *);
 char *fcvt(double, int, int *, int *);
 char *gcvt(double, int, char *);
 struct __locale_struct;
-//float strtof_l(const char *__restrict, char **__restrict, struct __locale_struct *);
-//double strtod_l(const char *__restrict, char **__restrict, struct __locale_struct *);
-//long double strtold_l(const char *__restrict, char **__restrict, struct __locale_struct *);
+#ifdef NO_ONTOLOGY_WASM
+float strtof_l(const char *__restrict, char **__restrict, struct __locale_struct *);
+double strtod_l(const char *__restrict, char **__restrict, struct __locale_struct *);
+long double strtold_l(const char *__restrict, char **__restrict, struct __locale_struct *);
+#endif
+#endif
+
+#ifdef NO_ONTOLOGY_WASM
+#if defined(_LARGEFILE64_SOURCE) || defined(_GNU_SOURCE)
+#define mkstemp64 mkstemp
+#define mkostemp64 mkostemp
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#define mkstemps64 mkstemps
+#define mkostemps64 mkostemps
+#endif
+#endif
 #endif
 
 #ifdef __cplusplus

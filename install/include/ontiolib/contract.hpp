@@ -3,11 +3,13 @@
 #include "datastream.hpp"
 
 namespace ontio {
+
 class contract {
+#ifdef WASM_USE_SYS_KEYTABLE
    public:
-      contract( datastream<const char*> ds ): _ds(ds) {}
-      inline datastream<const char*> get_datastream()const { return _ds; }
+		contract(const keytable &_syskt): syskt(_syskt) {}
    protected:
-      datastream<const char*> _ds = datastream<const char*>(nullptr, 0);
+		keytable syskt;
+#endif
 };
 }

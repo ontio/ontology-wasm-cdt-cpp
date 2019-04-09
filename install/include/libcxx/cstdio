@@ -1,10 +1,9 @@
 // -*- C++ -*-
 //===---------------------------- cstdio ----------------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
@@ -109,6 +108,9 @@ using ::FILE;
 using ::fpos_t;
 using ::size_t;
 
+#ifdef NO_ONTOLOGY_WASM
+using ::fclose;
+#endif
 using ::fflush;
 using ::setbuf;
 using ::setvbuf;
@@ -140,6 +142,17 @@ using ::clearerr;
 using ::feof;
 using ::ferror;
 using ::perror;
+
+#ifdef NO_ONTOLOGY_WASM
+#ifndef _LIBCPP_HAS_NO_GLOBAL_FILESYSTEM_NAMESPACE
+using ::fopen;
+using ::freopen;
+using ::remove;
+using ::rename;
+using ::tmpfile;
+using ::tmpnam;
+#endif
+#endif
 
 #ifndef _LIBCPP_HAS_NO_STDIN
 using ::getchar;

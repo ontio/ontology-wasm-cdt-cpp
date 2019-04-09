@@ -1,10 +1,9 @@
 // -*- C++ -*-
 //===---------------------------- math.h ----------------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
@@ -191,8 +190,10 @@ float          fdimf(float x, float y);
 long double    fdiml(long double x, long double y);
 
 floating_point fma (arithmetic x, arithmetic y, arithmetic z);
-//float          fmaf(float x, float y, float z);
-//long double    fmal(long double x, long double y, long double z);
+#ifdef NO_ONTOLOGY_WASM
+float          fmaf(float x, float y, float z);
+long double    fmal(long double x, long double y, long double z);
+#endif
 
 floating_point fmax (arithmetic x, arithmetic y);
 float          fmaxf(float x, float y);
@@ -314,7 +315,7 @@ extern "C++" {
 #ifdef signbit
 
 template <class _A1>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 bool
 __libcpp_signbit(_A1 __lcpp_x) _NOEXCEPT
 {
@@ -376,7 +377,7 @@ signbit(_A1) _NOEXCEPT
 #ifdef fpclassify
 
 template <class _A1>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 int
 __libcpp_fpclassify(_A1 __lcpp_x) _NOEXCEPT
 {
@@ -422,7 +423,7 @@ fpclassify(_A1 __lcpp_x) _NOEXCEPT
 #ifdef isfinite
 
 template <class _A1>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 bool
 __libcpp_isfinite(_A1 __lcpp_x) _NOEXCEPT
 {
@@ -456,7 +457,7 @@ isfinite(_A1) _NOEXCEPT
 #ifdef isinf
 
 template <class _A1>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 bool
 __libcpp_isinf(_A1 __lcpp_x) _NOEXCEPT
 {
@@ -483,6 +484,20 @@ typename std::enable_if<
 isinf(_A1) _NOEXCEPT
 { return false; }
 
+#ifdef _LIBCPP_PREFERRED_OVERLOAD
+inline _LIBCPP_INLINE_VISIBILITY
+bool
+isinf(float __lcpp_x) _NOEXCEPT { return __libcpp_isinf(__lcpp_x); }
+
+inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
+bool
+isinf(double __lcpp_x) _NOEXCEPT { return __libcpp_isinf(__lcpp_x); }
+
+inline _LIBCPP_INLINE_VISIBILITY
+bool
+isinf(long double __lcpp_x) _NOEXCEPT { return __libcpp_isinf(__lcpp_x); }
+#endif
+
 #endif  // isinf
 
 // isnan
@@ -490,7 +505,7 @@ isinf(_A1) _NOEXCEPT
 #ifdef isnan
 
 template <class _A1>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 bool
 __libcpp_isnan(_A1 __lcpp_x) _NOEXCEPT
 {
@@ -513,6 +528,20 @@ typename std::enable_if<std::is_integral<_A1>::value, bool>::type
 isnan(_A1) _NOEXCEPT
 { return false; }
 
+#ifdef _LIBCPP_PREFERRED_OVERLOAD
+inline _LIBCPP_INLINE_VISIBILITY
+bool
+isnan(float __lcpp_x) _NOEXCEPT { return __libcpp_isnan(__lcpp_x); }
+
+inline _LIBCPP_INLINE_VISIBILITY _LIBCPP_PREFERRED_OVERLOAD
+bool
+isnan(double __lcpp_x) _NOEXCEPT { return __libcpp_isnan(__lcpp_x); }
+
+inline _LIBCPP_INLINE_VISIBILITY
+bool
+isnan(long double __lcpp_x) _NOEXCEPT { return __libcpp_isnan(__lcpp_x); }
+#endif
+
 #endif  // isnan
 
 // isnormal
@@ -520,7 +549,7 @@ isnan(_A1) _NOEXCEPT
 #ifdef isnormal
 
 template <class _A1>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 bool
 __libcpp_isnormal(_A1 __lcpp_x) _NOEXCEPT
 {
@@ -550,7 +579,7 @@ isnormal(_A1 __lcpp_x) _NOEXCEPT
 #ifdef isgreater
 
 template <class _A1, class _A2>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 bool
 __libcpp_isgreater(_A1 __lcpp_x, _A2 __lcpp_y) _NOEXCEPT
 {
@@ -580,7 +609,7 @@ isgreater(_A1 __lcpp_x, _A2 __lcpp_y) _NOEXCEPT
 #ifdef isgreaterequal
 
 template <class _A1, class _A2>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 bool
 __libcpp_isgreaterequal(_A1 __lcpp_x, _A2 __lcpp_y) _NOEXCEPT
 {
@@ -610,7 +639,7 @@ isgreaterequal(_A1 __lcpp_x, _A2 __lcpp_y) _NOEXCEPT
 #ifdef isless
 
 template <class _A1, class _A2>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 bool
 __libcpp_isless(_A1 __lcpp_x, _A2 __lcpp_y) _NOEXCEPT
 {
@@ -640,7 +669,7 @@ isless(_A1 __lcpp_x, _A2 __lcpp_y) _NOEXCEPT
 #ifdef islessequal
 
 template <class _A1, class _A2>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 bool
 __libcpp_islessequal(_A1 __lcpp_x, _A2 __lcpp_y) _NOEXCEPT
 {
@@ -670,7 +699,7 @@ islessequal(_A1 __lcpp_x, _A2 __lcpp_y) _NOEXCEPT
 #ifdef islessgreater
 
 template <class _A1, class _A2>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 bool
 __libcpp_islessgreater(_A1 __lcpp_x, _A2 __lcpp_y) _NOEXCEPT
 {
@@ -700,7 +729,7 @@ islessgreater(_A1 __lcpp_x, _A2 __lcpp_y) _NOEXCEPT
 #ifdef isunordered
 
 template <class _A1, class _A2>
-_LIBCPP_ALWAYS_INLINE
+_LIBCPP_INLINE_VISIBILITY
 bool
 __libcpp_isunordered(_A1 __lcpp_x, _A2 __lcpp_y) _NOEXCEPT
 {
@@ -1162,7 +1191,8 @@ fdim(_A1 __lcpp_x, _A2 __lcpp_y) _NOEXCEPT
 }
 
 // fma
-/*
+
+#ifdef NO_ONTOLOGY_WASM
 inline _LIBCPP_INLINE_VISIBILITY float       fma(float __lcpp_x, float __lcpp_y, float __lcpp_z) _NOEXCEPT                   {return ::fmaf(__lcpp_x, __lcpp_y, __lcpp_z);}
 inline _LIBCPP_INLINE_VISIBILITY long double fma(long double __lcpp_x, long double __lcpp_y, long double __lcpp_z) _NOEXCEPT {return ::fmal(__lcpp_x, __lcpp_y, __lcpp_z);}
 
@@ -1183,7 +1213,8 @@ fma(_A1 __lcpp_x, _A2 __lcpp_y, _A3 __lcpp_z) _NOEXCEPT
                      std::is_same<_A3, __result_type>::value)), "");
     return ::fma((__result_type)__lcpp_x, (__result_type)__lcpp_y, (__result_type)__lcpp_z);
 }
-*/
+#endif
+
 // fmax
 
 inline _LIBCPP_INLINE_VISIBILITY float       fmax(float __lcpp_x, float __lcpp_y) _NOEXCEPT             {return ::fmaxf(__lcpp_x, __lcpp_y);}
@@ -1485,5 +1516,19 @@ trunc(_A1 __lcpp_x) _NOEXCEPT {return ::trunc((double)__lcpp_x);}
 } // extern "C++"
 
 #endif // __cplusplus
+
+#else // _LIBCPP_MATH_H
+
+// This include lives outside the header guard in order to support an MSVC
+// extension which allows users to do:
+//
+// #define _USE_MATH_DEFINES
+// #include <math.h>
+//
+// and receive the definitions of mathematical constants, even if <math.h>
+// has previously been included.
+#if defined(_LIBCPP_MSVCRT) && defined(_USE_MATH_DEFINES)
+#include_next <math.h>
+#endif
 
 #endif  // _LIBCPP_MATH_H

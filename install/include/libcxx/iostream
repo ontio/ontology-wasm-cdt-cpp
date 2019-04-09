@@ -1,17 +1,16 @@
 // -*- C++ -*-
 //===--------------------------- iostream ---------------------------------===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is dual licensed under the MIT and the University of Illinois Open
-// Source Licenses. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
 #ifndef _LIBCPP_IOSTREAM
 #define _LIBCPP_IOSTREAM
-//#error "iostreams currently clash with ont::datastream"
-#include<remove_wasm_float>
+#error "iostream currently clash with onto::datastream"
+
 /*
     iostream synopsis
 
