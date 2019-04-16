@@ -109,14 +109,14 @@ class keytable :private set<string> {
 
       auto f2 = [&]( auto... a ) {
          R&& t = ((&inst)->*func)( a... );
+#ifdef WASM_USE_SYS_KEYTABLE
+		 keytable::commit("###syskt###", syskt);
+#endif
 		 auto data = pack<R>(t);
 		 ::ret(data.data(), data.size()); 
       };
 
       boost::mp11::tuple_apply( f2, args );
-#ifdef WASM_USE_SYS_KEYTABLE
-	  keytable::commit("###syskt###", syskt);
-#endif
    }
 
    template<typename T, typename... Args>
@@ -134,12 +134,12 @@ class keytable :private set<string> {
 
       auto f2 = [&]( auto... a ) {
          ((&inst)->*func)( a... );
+#ifdef WASM_USE_SYS_KEYTABLE
+		 keytable::commit("###syskt###", syskt);
+#endif
       };
 
       boost::mp11::tuple_apply( f2, args );
-#ifdef WASM_USE_SYS_KEYTABLE
-	  keytable::commit("###syskt###", syskt);
-#endif
    }
 
  // Helper macro for ONTIO_DISPATCH_INTERNAL
