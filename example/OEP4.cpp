@@ -5,7 +5,7 @@ using namespace ontio;
 
 class oep4 : public contract {
     key SUPPLY_KEY = make_key("totalsupply");
-    address OWNER = Base58toaddress("Ad4pjz2bqep4RhQrUAzMuZJkBC3qJ1tZuT");
+    address OWNER = base58toaddress("Ad4pjz2bqep4RhQrUAzMuZJkBC3qJ1tZuT");
     asset total = 1000000000;
     std::string balancePrefix = "balance_";
     std::string approvePrefix = "approve_";
