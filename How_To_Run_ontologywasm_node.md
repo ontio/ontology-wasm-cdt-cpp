@@ -1,3 +1,9 @@
+# 	*How To Run ontologywasm node*
+
+
+
+[TOC]
+
 #### run ontology wasm node.
 
 ```

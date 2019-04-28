@@ -1,4 +1,10 @@
-##### BlockChainApi
+
+
+# 		*How To Use cdt*
+
+[TOC]
+
+#### BlockChainApi
 
 | api name          | args                                                         | return  |
 | ----------------- | ------------------------------------------------------------ | ------- |
@@ -105,7 +111,7 @@ auto v = pack(tfsm);
 ​	currently, ontology wasm cdt support libc/libc++/base58/crypto/.  so you can coding include this library like tranditionl way. the  most import maybe the libc++'s std. like map, list, vecotr, array etc. and when you compile failed with function not find at the link step. may be you can add lib like blow.  and the libc/libc++ already added auto.
 
 ```
-ont_cpp yourfile.cpp -lbase58 -lcyrpto -lbuiltin
+ont_cpp yourfile.cpp -lbase58 -lcyrpto -lbuiltins
 ```
 
 #### Codestype
@@ -132,3 +138,12 @@ ONTIO_DISPATCH(hello, (myhello))
 ​	include ontio.hpp first. this include most of the include file include std. so if you want vector. just declare with using std::vector is ok.  class hello is your contract name. myhello is the interface support. any intferface expose to user must add to ONTIO_DISPATCH(contract_name, (intferface0), (intferface1, (intferface2), ....)
 
 #### Example
+
+[oep4](testnet/oep4.cpp)
+
+[oep5](testnet/oep5.cpp)
+
+[oep7](testnet/oep7.cpp)
+
+[hello](hello.cpp)
+
