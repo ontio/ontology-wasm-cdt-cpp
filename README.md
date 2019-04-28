@@ -3,8 +3,14 @@
 ​	ontology wasm toolchain for smart contract development using c/c++. including libc/libc++/boost/. will add more later.
 
 - Free software: MIT license
-
-[TOC]
+    - [Install](#Install)
+    - [Feature](#Feature)
+    - [How to write contract](#How_To_Write_Contract)
+    - [Interface](#Interface)
+    - [Tools](#Tools)
+    - [Usage](#Usage)
+    - [License](#License)
+    - [Third Party License](#Third_Party_License)
 
 # Install
 
@@ -44,7 +50,7 @@ docker run -it --rm -v /absolute/path/input_dir:/root/contracts ontowasm "/bin/b
 - Runtime api for blockchain interaction
 - libc/libc++/boost/crypto support.
 
-# How to write contract.
+# How_To_Write_Contract.
 
 code blow is a simple oep4 contract for ontology. only need include<ontoiolib/ontio.hpp>.  class oep4 is your contract class. only need public inherit the contract class. and realize any interface you want. last use the ONTIO_DISPATCH macro to generate the entry code of your contract. developer only need care about the interface.
 
@@ -224,7 +230,7 @@ ontio-abigen oep4.cpp --contract="oep4" --output="oep4.abj.json" --binary="oep4.
 
 This project is licensed under the [MIT license](LICENSE).
 
-# Third Party License
+# Third_Party_License
 
 To quickly explore the feasibility of wasm contract development, initial development is based on the work make by third parties:
 

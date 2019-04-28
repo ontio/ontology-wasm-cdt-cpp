@@ -2,7 +2,18 @@
 
 # 		*How To Use cdt*
 
-[TOC]
+- [BlockChainApi](#BlockChainApi)
+
+- [OtherApi](#OtherApi)
+
+- [Structure](#Structure)
+
+- [Library_Support](#Library_Support)
+
+- [Codestype](#Codestype)
+
+- [Example](#Example)
+
 
 #### BlockChainApi
 
@@ -61,7 +72,7 @@ auto v = pack(vec, st);
 
 ​	you can pack any number of args that the type data support searialize. and the args type can be different.
 
-##### c.  how to make key.
+##### c.  how to make key
 
 ​	the key construct interface is make_key. acctually, make_key just a pack define. 
 
@@ -73,7 +84,7 @@ address owner;
 key res = make_Key(prefix, owner);
 ```
 
-##### d.  how to serialize self defined structure.
+##### d.  how to serialize self defined structure
 
 ​	ONTLIB_SERIALIZE can help define the serialization of self defined structure。 expamle blow
 
@@ -106,7 +117,7 @@ auto v = pack(tfsm);
 | H160      | NA                                               | H160 is typefdef of std::array<uint8, 20>                    |
 | H256      | NA                                               | typedef of std::array<uint8, 32>                             |
 
-#### Library support.
+#### Library_Support.
 
 ​	currently, ontology wasm cdt support libc/libc++/base58/crypto/.  so you can coding include this library like tranditionl way. the  most import maybe the libc++'s std. like map, list, vecotr, array etc. and when you compile failed with function not find at the link step. may be you can add lib like blow.  and the libc/libc++ already added auto.
 

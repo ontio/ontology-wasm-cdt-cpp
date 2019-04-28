@@ -2,8 +2,6 @@
 
 
 
-[TOC]
-
 #### run ontology wasm node.
 
 ```
