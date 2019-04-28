@@ -1,16 +1,16 @@
-# 				ontio-dtc
+# 				*ontology wasm cdt*
 
 ​	ontology wasm toolchain for smart contract development using c/c++. including libc/libc++/boost/. will add more later.
 
 - Free software: MIT license
-  - [Install](#Install)
-  - [Feature](#Feature)
-  - [How to write contract](#How to write contract)
-  - [Interface](#Interface)
-  - [Tools](#Tools)
-  - [Usage](#Usage)
-  - [License](#License)
-  - [Third Party License](#Third Party License)
+    - [Install](#Install)
+    - [Feature](#Feature)
+    - [How to write contract](#How_To_Write_Contract)
+    - [Interface](#Interface)
+    - [Tools](#Tools)
+    - [Usage](#Usage)
+    - [License](#License)
+    - [Third Party License](#Third_Party_License)
 
 # Install
 
@@ -48,145 +48,159 @@ docker run -it --rm -v /absolute/path/input_dir:/root/contracts ontowasm "/bin/b
 # Feature
 
 - Runtime api for blockchain interaction
-- Contract level storage management
-- libc/libc++/boost support.
+- libc/libc++/boost/crypto support.
 
-# How to write contract.
+# How_To_Write_Contract.
 
 code blow is a simple oep4 contract for ontology. only need include<ontoiolib/ontio.hpp>.  class oep4 is your contract class. only need public inherit the contract class. and realize any interface you want. last use the ONTIO_DISPATCH macro to generate the entry code of your contract. developer only need care about the interface.
 
 ```
-//#define WASM_DEBUG_INTERFACE
-#define WASM_LOCAL_DEBUG_OEP4
 #include<ontiolib/ontio.hpp>
+#include<ontiolib/base58.hpp>
+
 using namespace ontio;
 
 class oep4 : public contract {
-	key SUPPLY_KEY = pack(std::string("TotalSupply"));
-	address OWNER = {0xe9,0x8f,0x49,0x98,0xd8,0x37,0xfc,0xdd,0x44,0xa5,0x05,0x61,0xf7,0xf3,0x21,0x40,0xc7,0xc6,0xc2,0x60};
-	asset total = 1000000000;
-	uint8_t balanceprfix = 0x1;
+    key SUPPLY_KEY = make_key("totalsupply");
+    address OWNER = base58toaddress("Ab1z3Sxy7ovn4AuScdmMh4PRMvcwCMzSNV");
+    asset total = 1000000000;
+    std::string balancePrefix = "balance_";
+    std::string approvePrefix = "approve_";
+    std::string NAME = "WTK";
+    std::string SYMBOL = "SYM";
 
-	public:
-	using contract::contract;
-	bool init(void) {
-#ifdef WASM_LOCAL_DEBUG_OEP4
-		printf("%s\n",__FUNCTION__);
-#endif
-		bool success = false;
-		asset total_inner = 0;
-#ifdef WASM_LOCAL_DEBUG_OEP4
-		for(auto i: OWNER) { printf("%02x", i); }; printf("\n");
-#endif
-		if (check_witness(OWNER)) {
-			if(storage_get(SUPPLY_KEY, total_inner)) {
-#ifdef WASM_LOCAL_DEBUG_OEP4
-				printf("already init. total = %lld\n", total_inner.amount);
-#endif
-				return success;
-			} else {
-#ifdef WASM_LOCAL_DEBUG_OEP4
-				printf("start init. total %lld", total.amount);
-#endif
-				success = true;
-				key key_owner = make_key(balanceprfix, OWNER);
-#ifdef WASM_LOCAL_DEBUG_OEP4
-				printf("key_owner: ");
-				for(auto i: key_owner) { printf("%02x",i); }
-				printf("\n");
-#endif
-				storage_put(SUPPLY_KEY, total);
-				storage_put(key_owner, total);
-				notify("init success hello world.");
-				return success;
-			}
-		} else {
-#ifdef WASM_LOCAL_DEBUG_OEP4
-			printf("auth failed\n");
-#endif
-			success = false;
-			return success;
-		}
-	}
+    int DECIMALS = 9;
 
-	bool transfer(address from, address to, asset amount) {
-#ifdef WASM_LOCAL_DEBUG_OEP4
-		printf("%s\n",__FUNCTION__);
-#endif
-		bool success = true;
-		bool failed = false;
-		if (not check_witness(from)) {
-#ifdef WASM_LOCAL_DEBUG_OEP4
-			printf("transfer auth failed\n");
-#endif
-			return failed;
-		}
+    struct transferM {
+        address from;
+        address to;
+        asset amount;
+        ONTLIB_SERIALIZE( transferM,  (from)(to)(amount) )
+    };
+	using mul_trans_args = std::vector<struct transferM>;
 
-		if (amount < 0)
-			return failed;
+    public:
+    using contract::contract;
+    bool init(){
+        check(check_witness(OWNER),"checkwitness failed");
+        asset totalsupply = 0;
+        if (storage_get(SUPPLY_KEY,totalsupply)){
+            return false;
+        }
 
-		key fromkey = make_key(balanceprfix, from);
-		asset frombalance = 0; 
-		if (not storage_get(fromkey, frombalance))
-			return failed;
+        storage_put(SUPPLY_KEY,total);
+        storage_put(make_key(balancePrefix,OWNER),total);
+        char buffer [100];
+        sprintf(buffer, "%s %s %d","init",OWNER.tohexstring().c_str(),total);
+        notify(buffer);
+        return true;
+    }
 
-		if (amount > frombalance)
-			return failed;
-		else if (amount == frombalance)
-			storage_delete(fromkey);
-		else {
-			frombalance -= amount;
-			storage_put(fromkey, frombalance);
-		}
+    std::string name(){
+        return NAME;
+    }
 
-		key tokey = make_key(balanceprfix, to);
-		asset tobalance = 0;
-		storage_get(tokey, tobalance);
+    std::string symbol(){
+        return SYMBOL;
+    }
 
-		tobalance += amount;
-#ifdef WASM_LOCAL_DEBUG_OEP4
-		printf("transfer amount : %lld\n", amount.amount);
-#endif
-		storage_put(tokey, tobalance);
-		return failed;
-	}
+    asset totalSupply(){
+        return total;
+    }
 
-	asset balance(address addr) {
-#ifdef WASM_LOCAL_DEBUG_OEP4
-		printf("%s\n",__FUNCTION__);
-		printf("get the balance of address: ");
-		for(auto i: addr) { printf("%02x", i); }
-		printf("\n");
-#endif
-		bool success = true;
-		bool failed = false;
-		asset mybalance = 0;
-		key addr_key = make_key(balanceprfix, addr);
-#ifdef WASM_LOCAL_DEBUG_OEP4
-		printf("addr_key: ");
-		for(auto i: addr_key) { printf("%02x",i); }
-		printf("\n");
-#endif
-		if (not storage_get(addr_key, mybalance)) {
-#ifdef WASM_LOCAL_DEBUG_OEP4
-			printf("read failed\n");
-#endif
-			return -1;
-		}
-#ifdef WASM_LOCAL_DEBUG_OEP4
-		printf("read success\n");
-		printf("balance %lld\n", mybalance.amount);
-#endif
-		return mybalance;
-	}
+    int decimals(){
+        return DECIMALS;
+    }
+
+    bool transfer(address from, address to , asset amount){
+        check(check_witness(from),"checkwitness failed");
+        check(amount > 0,"amount should greater than 0");
+        if (from == to){
+            return true;
+        }
+        asset frombalance = balanceOf(from);
+        asset tobalance = balanceOf(to);
+
+        key fromkey = make_key(balancePrefix,from);
+        key tokey = make_key(balancePrefix,to);
+
+        check(frombalance >= amount,"amount error");
+        if (frombalance == amount){
+            storage_delete(fromkey);
+        }else{
+            asset tmp = frombalance - amount;
+            storage_put(fromkey,tmp);
+        }
+        asset tmp = tobalance+amount;
+        storage_put(tokey,tmp);
+        char buffer [128];
+        sprintf(buffer, "transfer from %s to %s . amount %d",from.tohexstring().c_str(),to.tohexstring().c_str(),amount);
+        notify(buffer);
+        notify("transfer accomplised");
+
+        return true;
+    }
+
+    bool approve(address from, address to , asset amount){
+        check(check_witness(from),"checkwitness failed");
+        check(amount > 0,"amount error");
+        check(balanceOf(from) >= amount,"amount error");
+        storage_put(make_key(approvePrefix,from,"_",to),amount);
+        return true;
+    }
+
+    asset allowance(address from, address to){
+        asset b = 0;
+        storage_get(make_key(approvePrefix,from,"_",to),b);
+        return b;
+    }
+
+    bool transferFrom(address owner, address from,address to, asset amount){
+        check(check_witness(owner),"checkwitness failed");
+        asset aw = allowance(from,owner);
+        check(aw >= amount,"amount error");
+        asset frombalance = balanceOf(from);
+        check(frombalance >= amount,"amount error");
+
+        key allownancekey = make_key(approvePrefix,from,"_",owner);
+        key frombalancekey = make_key(balancePrefix,from);
+
+        if (aw == amount){
+            storage_delete(allownancekey);
+        }else{
+            storage_put(allownancekey, aw - amount);
+        }
+
+        if (balanceOf(from) == amount){
+            storage_delete(frombalancekey);
+        }else{
+            storage_put(frombalancekey,frombalance - amount);
+        }
+
+        asset tmp = balanceOf(to) + amount;
+        storage_put(make_key(balancePrefix,to),tmp);
+        return true;
+    }
+
+    bool transferMulti(mul_trans_args params){
+        for (struct transferM p :params){
+            check(transfer(p.from, p.to, p.amount),"tranfer failed");
+        }
+        return true;
+    }
+
+    asset balanceOf(address acct){
+        asset b = 0;
+        storage_get(make_key(balancePrefix,acct),b);
+        return b;
+    }
 };
-
-ONTIO_DISPATCH(oep4, (init)(transfer)(balance))
+ONTIO_DISPATCH(oep4, (init)(transfer)(balanceOf)(allowance)(transferFrom)(approve)(name)(symbol)(totalSupply)(decimals)(transferMulti));
 ```
 
 # Interface
 
-developer can check the [service.hpp](install/include/ontiolib/service.hpp) . provide api to interact with blockchain. like get the context of smartcontract. read or store data to blockchain. etc.
+developer can check the [How_To_Use_cdt](How_To_Use_cdt.md) . provide api to interact with blockchain. like get the context of smartcontract. read or store data to blockchain.  and [How_To_Run_ontologywasm_node](How_To_Run_ontologywasm_node.md) provide a simple guide that run a ontology wasm node. and how to deploy or invoke a contract with cli. 
 
 # Tools
 
@@ -200,22 +214,23 @@ wasm-objdump:  dump wasm object file.
 
 wasm2wat:  transfer binary file to wast file.
 
+ontio-abigen: generate abi file.
 
+wasm-opt: can opt the code of wasm.
 
 # Usage
 
 ```
-ont_c test.c
-ont_c test.c -o test.wasm
-ont_c oep4.cpp
-ont_c oep4.cpp -o oep4.wasm
+ont_cpp oep4.cpp
+ont_cpp oep4.cpp -o oep4.wasm
+ontio-abigen oep4.cpp --contract="oep4" --output="oep4.abj.json" --binary="oep4.wasm"
 ```
 
 # License
 
 This project is licensed under the [MIT license](LICENSE).
 
-# Third Party License
+# Third_Party_License
 
 To quickly explore the feasibility of wasm contract development, initial development is based on the work make by third parties:
 
