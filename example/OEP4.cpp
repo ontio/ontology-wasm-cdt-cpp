@@ -20,6 +20,7 @@ class oep4 : public contract {
         asset amount;
         ONTLIB_SERIALIZE( transferM,  (from)(to)(amount) )
     };
+	using mul_trans_args = std::vector<struct transferM>;
 
     public:
     using contract::contract;
@@ -126,7 +127,7 @@ class oep4 : public contract {
 
     }
 
-    bool transferMulti(std::vector<struct transferM> params){
+    bool transferMulti(mul_trans_args params){
         for (struct transferM p :params){
             ontio_assert(transfer(p.from, p.to, p.amount),"tranfer failed");
         }
@@ -139,4 +140,4 @@ class oep4 : public contract {
         return b;
     }
 };
-ONTIO_DISPATCH(oep4, (init)(transfer)(balanceOf)(allowance)(transferFrom)(approve)(name)(symbol)(totalSupply)(decimals));
+ONTIO_DISPATCH(oep4, (init)(transfer)(balanceOf)(allowance)(transferFrom)(approve)(name)(symbol)(totalSupply)(decimals)(transferMulti));

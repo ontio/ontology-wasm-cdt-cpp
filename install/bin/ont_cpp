@@ -3,22 +3,33 @@ import subprocess
 import sys
 import uuid
 import os
+import binascii
 
 print_help = False
 compile_lib = False
 front_process = False
 abi_gen = False
-contract_binary = 'a.out' #default binary name a.out
+contract_binary = 'a.out'  # default binary name a.out
 install_dir = os.path.split(os.path.realpath(__file__))[0] + "/../"
-common_option = ["--target=wasm32","-O3" , "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics", "-nostdinc", "-static", "-fno-rtti -fno-exceptions", "-DBOOST_DISABLE_ASSERTS ", "-DBOOST_EXCEPTION_DISABLE ", "-std=c++17", "-Wl,--gc-sections,--merge-data-segments,-zstack-size=8192", "-Wno-unused-command-line-argument", "-s"]
+common_option = ["--target=wasm32", "-O3", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics", "-nostdinc", "-static", "-fno-rtti -fno-exceptions", "-DBOOST_DISABLE_ASSERTS ", "-DBOOST_EXCEPTION_DISABLE ", "-std=c++17", "-Wl,--gc-sections,--merge-data-segments,-zstack-size=8192", "-Wno-unused-command-line-argument", "-s"]
 ast_option = ["--target=wasm32", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics", "-nostdinc", "-fno-rtti -fno-exceptions", "-DBOOST_DISABLE_ASSERTS ", "-DBOOST_EXCEPTION_DISABLE ", "-std=c++17"]
-wasmvm_service = ["debug","save_input_arg", "get_input", "input_length", "call_contract", "ret", "get_call_output", "call_output_length", "timestamp", "block_height", "self_address", "caller_address", "entry_address", "get_input", "check_witness", "current_blockhash", "current_txhash", "notify", "storage_read", "storage_write", "storage_delete", "contract_create", "contract_migrate", "contract_delete"]
+wasmvm_service = ["debug", "save_input_arg", "get_input", "input_length", "call_contract", "ret", "get_call_output", "call_output_length", "timestamp", "block_height", "self_address", "caller_address", "entry_address", "get_input", "check_witness", "current_blockhash", "current_txhash", "notify", "storage_read", "storage_write", "storage_delete", "contract_create", "contract_migrate", "contract_delete"]
 
 
 def run_bashcmd(cmd):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p.wait()
     for line in p.stdout.readlines():
         print(line.decode("utf-8"), end='')
+
+    p.communicate()
+    if p.returncode != 0:
+        exit()
+
+
+def write_file_with_bytes(data, path):
+    with open(path, 'wb+') as out_file:
+        out_file.write(data)
 
 
 def compileWasm(options_for_clang):
@@ -49,6 +60,15 @@ def compileWasm(options_for_clang):
 
     run_bashcmd(cmd)
     run_bashcmd('rm %s' % tmp_file_name)
+    optcmd = 'wasm-opt -O4 %s -o %s' % (contract_binary, contract_binary)
+    run_bashcmd(optcmd)
+
+    with open(contract_binary, 'rb') as binaryfile:
+        codedata = binaryfile.read()
+
+    data_str = binascii.hexlify(codedata).decode('ascii')
+    with open(contract_binary + '.str', 'w') as out_file:
+        out_file.write(data_str)
 
 
 if __name__ == '__main__':
@@ -84,6 +104,5 @@ if __name__ == '__main__':
     elif front_process:
         for option in ast_option:
             options_for_clang += ' ' + option
-
 
     compileWasm(options_for_clang)

@@ -4,7 +4,7 @@
 using namespace ontio;
 
 class oep5 : public contract {
-    address OWNER = Base58toaddress("Ad4pjz2bqep4RhQrUAzMuZJkBC3qJ1tZuT");
+    address OWNER = base58toaddress("Ad4pjz2bqep4RhQrUAzMuZJkBC3qJ1tZuT");
     std::string NAME = "OEP5 WASM";
     std::string SYMBOL = "OEP5 SYMBOL";
     std::string BALANCE_PREFIX = "balance_";
