@@ -10,7 +10,7 @@ using std::string;
 
 class address : public H160 {
 	public:
-	string tohexstring(void) {
+	string tohexstring(void) const {
 		string s;
 		s.resize(40);
 		int index = 0;
