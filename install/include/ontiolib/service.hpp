@@ -106,7 +106,7 @@ address contract_migrate(const std::vector<char> &code, const uint32_t &vmtype, 
 template<typename T>
 bool storage_get(const key &key, T &val) {
 	std::vector<char> s;
-	size_t initlength = 32;
+	size_t initlength = pack_size(val);
 	s.resize(initlength);
 	size_t length = ::storage_read(key.data(), key.size(), s.data(), s.size(), 0);
 	if (length == UINT32_MAX) {
