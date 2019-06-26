@@ -8,6 +8,7 @@
 #include "dispatcher.hpp"
 #include "contract.hpp"
 #include "ont.hpp"
+#include "callneo.hpp"
 
 static_assert( sizeof(long) == sizeof(int), "unexpected size difference" );
 
