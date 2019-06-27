@@ -9,10 +9,6 @@ using std::set;
 class hello : public contract {
 public:
 	using contract::contract;
-	bool testsize(NeoUsize &t) {
-		printf("size is : %u\n", t);
-		return 1;
-	}
 
 	bool testbytearray(NeoByteArray &t) {
 		for(auto i: t) {printf("%02x", i);}
@@ -20,21 +16,25 @@ public:
 		return 1;
 	}
 
-	void testneolist(NeoList<NeoByteArray, NeoInt64> &t) {
+	void testneolist(NeoList<NeoByteArray, NeoInt<int64_t>> &t) {
 		NeoByteArray t0 = std::get<0>(t.value);
-		NeoInt64 t1 = std::get<1>(t.value);
+		NeoInt<int64_t> t1 = std::get<1>(t.value);
 		for(auto i: t0) {printf("%02x", i);}
 		printf("\n");
 
-		printf("NeoInt64: %lld\n", t1.value);
+		printf("NeoInt: %lld\n", t1.value);
 	}
 
-	void testuint256(NeoUint256 &t) {
+	void testh256(NeoH256 &t) {
 		t.debugout();
+	}
+
+	void testneoint(NeoInt<int64_t> &t) {
+		printf("NeoInt: %lld\n", t.value);
 	}
 };
 
-ONTIO_DISPATCH( hello, (testsize)(testbytearray)(testneolist)(testuint256))
+ONTIO_DISPATCH( hello, (testbytearray)(testneolist)(testh256))
 
 void testbytearray(void) {
 	uint32_t testtype = 0;
@@ -46,22 +46,12 @@ void testbytearray(void) {
 	apply();
 }
 
-void testusize(void) {
-	string action("testsize");
-	NeoUsize t;
-	t.value = 9;
-
-	auto v = pack(action, t);
-	save_input_arg(v.data(), v.size());
-	apply();
-}
-
 void testneolist(void) {
-	NeoInt64 t0;
+	NeoInt<int64_t> t0;
 	t0.value = 97;
 	NeoByteArray t1 = {0x99,0x34,0xfe, 0xab, 0xff};
 	string action("testneolist");
-	NeoList<NeoByteArray, NeoInt64> t;
+	NeoList<NeoByteArray, NeoInt<int64_t>> t;
 	std::get<0>(t.value) = t1;
 	std::get<1>(t.value) = t0;
 
@@ -71,8 +61,8 @@ void testneolist(void) {
 }
 
 void testneouint256(void) {
-	string action("testuint256");
-	NeoUint256 t = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32};
+	string action("testh256");
+	NeoH256 t = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32};
 
 	auto v = pack(action, t);
 	save_input_arg(v.data(), v.size());
@@ -83,7 +73,6 @@ void testneouint256(void) {
 
 extern "C" void invoke(void) {
 	testbytearray();
-	testusize();
 	testneolist();
 	testneouint256();
 }

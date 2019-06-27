@@ -1,37 +1,16 @@
 using std::vector;
 using std::tuple;
+using std::array;
 
 namespace ontio {
 enum { 
-	ByteArrayType = 0,
-	AddressType, 
-	BooleanType,
-	UsizeType,
-	Int64Type,
-	Uint64Type,
-	Uint256Type,
-	ListType 
-};
+	ByteArrayType = 0x00,
+	AddressType = 0x01, 
+	BooleanType = 0x02,
+	IntType = 0x03,
+	H256Type = 0x04,
 
-struct NeoUsize {
-	uint32_t value;
-
-	template<typename DataStream>
-	friend DataStream& operator<<( DataStream& ds, const NeoUsize& v ) {
-		uint8_t type = UsizeType;
-		ds << type;
-		ds << v.value;
-		return ds;
-	}
-
-	template<typename DataStream>
-	friend DataStream& operator>>( DataStream& ds, NeoUsize& v ) {
-		uint8_t type;
-		ds >> type;
-		assert(type == UsizeType);
-		ds >> v.value;
-		return ds;
-	}
+	ListType  = 0x10
 };
 
 struct NeoByteArray :public std::vector<uint8_t> {
@@ -102,50 +81,53 @@ struct NeoBoolean {
 	}
 };
 
-struct NeoInt64 {
-	int64_t value;
+
+template<typename type>
+struct NeoInt {
+	type value;
 	
 	template<typename DataStream>
-	friend DataStream& operator<<( DataStream& ds, const NeoInt64& v ) {
-		uint8_t type = Int64Type;
-		ds << type;
-		ds << v.value;
+	friend DataStream& operator<<( DataStream& ds, const NeoInt<type>& v ) {
+		uint8_t ttype = IntType;
+		uint8_t k = 0;
+		ds << ttype;
+
+		if (v.value > 0) {
+			uint32_t size = (sizeof(type) + 1);
+			ds << size;
+			ds << v.value;
+			ds << k;
+		} else if (v.value == 0) {
+			uint32_t size = 0;
+			ds << size;
+		} else {
+			uint32_t size = (sizeof(type));
+			ds << size;
+			ds << v.value;
+		}
+
 		return ds;
 	}
 
 	template<typename DataStream>
-	friend DataStream& operator>>( DataStream& ds, NeoInt64& v ) {
-		uint8_t type;
-		ds >> type;
-		ds >> v.value;
-		assert(type == Int64Type);
+	friend DataStream& operator>>( DataStream& ds, NeoInt<type>& v ) {
+		uint8_t ttype;
+		uint32_t size;
+		ds >> ttype;
+		ds >> size;
+		if (size == 0) {
+			v.value = 0;
+			assert(size == 0);
+		} else {
+			ds >> v.value;
+			assert((size == sizeof(type)) or (size == sizeof(type) + 1));
+		}
+		assert(ttype == IntType);
 		return ds;
 	}
-
 };
 
-struct NeoUint64 {
-	uint64_t value;
-	
-	template<typename DataStream>
-	friend DataStream& operator<<( DataStream& ds, const NeoUint64& v ) {
-		uint8_t type = Uint64Type;
-		ds << type;
-		ds << v.value;
-		return ds;
-	}
-
-	template<typename DataStream>
-	friend DataStream& operator>>( DataStream& ds, NeoUint64& v ) {
-		uint8_t type;
-		ds >> type;
-		ds >> v.value;
-		assert(type == Uint64Type);
-		return ds;
-	}
-};
-
-struct NeoUint256 : public H256 {
+struct NeoH256: public H256 {
 	string tohexstring(void) const {
 		string s;
 		s.resize(64);
@@ -167,18 +149,18 @@ struct NeoUint256 : public H256 {
 	}
 
 	template<typename DataStream>
-	friend DataStream& operator<<( DataStream& ds, const NeoUint256& v ) {
-		uint8_t type = Uint256Type;
+	friend DataStream& operator<<( DataStream& ds, const NeoH256& v ) {
+		uint8_t type = H256Type;
 		ds << type;
 		return ds << static_cast<const H256&>(v);
 	}
 
 	template<typename DataStream>
-	friend DataStream& operator>>( DataStream& ds, NeoUint256& v ) {
+	friend DataStream& operator>>( DataStream& ds, NeoH256& v ) {
 		uint8_t type;
 		uint32_t size;
 		ds >> type;
-		assert(type == Uint256Type);
+		assert(type == H256Type);
 		return ds >> static_cast<H256&>(v);
 	}
 };
