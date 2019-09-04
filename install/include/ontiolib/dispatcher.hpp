@@ -14,11 +14,11 @@
 #include <boost/mp11/tuple.hpp>
 #include "stringhash.hpp"
 
-extern "C" {
-void ret(const void *res, const size_t len);
-}
-
 namespace ontio {
+
+template<typename T>
+void ontio_return(const T &t);
+
 #ifdef WASM_USE_SYS_KEYTABLE
 using std::set;
 using std::string;
@@ -84,6 +84,8 @@ class keytable :private set<string> {
 		ONTLIB_SERIALIZE_DERIVED_NOMEMBER(keytable, set<string> )
 };
 #endif
+
+
      /**
     * Unpack the received action and execute the correponding action handler
     *
@@ -112,8 +114,7 @@ class keytable :private set<string> {
 #ifdef WASM_USE_SYS_KEYTABLE
 		 keytable::commit("###syskt###", syskt);
 #endif
-		 auto data = pack<R>(t);
-		 ::ret(data.data(), data.size()); 
+		 ontio_return<R>(t);
       };
 
       boost::mp11::tuple_apply( f2, args );
@@ -172,10 +173,7 @@ class keytable :private set<string> {
 extern "C" { \
    void apply(void) {  \
       std::string method; \
-      size_t size = input_length(); \
-	  std::vector<char> input; \
-	  input.resize(size); \
-      get_input(input.data()); \
+      auto input = get_input(); \
       datastream<const char*> ds(input.data(), input.size()); \
       ds >> method; \
       switch(__hash_string__::string_hash(method) ) { \
@@ -188,10 +186,7 @@ extern "C" { \
 extern "C" { \
    void invoke(void) {  \
       std::string method; \
-      size_t size = input_length(); \
-	  std::vector<char> input; \
-	  input.resize(size); \
-      get_input(input.data()); \
+      auto input = get_input(); \
       datastream<const char*> ds(input.data(), input.size()); \
       ds >> method; \
       switch(__hash_string__::string_hash(method) ) { \

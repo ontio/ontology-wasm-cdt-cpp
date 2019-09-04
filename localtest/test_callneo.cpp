@@ -1,4 +1,3 @@
-#define WASM_TEST
 #define WASM_LOCAL_DEBUG
 
 #include<ontiolib/ontio.hpp>
@@ -42,7 +41,7 @@ void testbytearray(void) {
 	NeoByteArray t = {0x12,0x34,0xfe, 0xab, 0xff};
 
 	auto v = pack(action, t);
-	save_input_arg(v.data(), v.size());
+	set_input(v);
 	apply();
 }
 
@@ -56,7 +55,7 @@ void testneolist(void) {
 	std::get<1>(t.value) = t0;
 
 	auto v = pack(action, t);
-	save_input_arg(v.data(), v.size());
+	set_input(v);
 	apply();
 }
 
@@ -65,7 +64,7 @@ void testneouint256(void) {
 	NeoH256 t = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32};
 
 	auto v = pack(action, t);
-	save_input_arg(v.data(), v.size());
+	set_input(v);
 
 	apply();
 }
