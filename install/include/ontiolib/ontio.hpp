@@ -32,11 +32,8 @@ static_assert( sizeof(long) == sizeof(int), "unexpected size difference" );
 extern "C" {
 void  ontio_assert( uint32_t test, const char* msg ) {
 	if (not test) {
-		debug(msg, strlen(msg));
+		ontio_debug(msg, strlen(msg));
 		abort();
 	}
 }
-#ifdef WASM_LOCAL_DEBUG
-void save_input_arg( void* msg, size_t len);
-#endif
 }

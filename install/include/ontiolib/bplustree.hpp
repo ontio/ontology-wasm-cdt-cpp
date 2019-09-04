@@ -59,6 +59,7 @@ private:
         void initialize(const unsigned short l) {
             level = l;
             slotuse = 0;
+			key_curr_node = invalid_rootblock_key;
         }
 
         bool is_leafnode() const {
@@ -68,7 +69,6 @@ private:
 		bool nextnode_level_isleaf() const {
 			return (level == 1);
 		}
-		//ONTLIB_SERIALIZE( node, (level) (slotuse) (key_curr_node))
     };
 
     struct InnerNode : public node {
@@ -210,7 +210,7 @@ public:
     public:
         iterator()
             : curr_slot(0)
-        { curr_leaf = BTree::allocate_leaf(); curr_leaf->initialize(0);curr_leaf->key_curr_node = invalid_rootblock_key; }
+        { curr_leaf = BTree::allocate_leaf(); curr_leaf->initialize(); }
 
         iterator(typename BTree::LeafNode *l, unsigned short s)
             : curr_slot(s)
@@ -304,7 +304,8 @@ public:
 	BTree() {
 		rootblock_isleaf = true;
 		key_head_leaf = key_tail_leaf = rootblock_key = invalid_rootblock_key;
-		blocknum = 1;
+		/*start from invalid_rootblock_key*/
+		blocknum = invalid_rootblock_key + 1;
 		key_num = 0;
 	}
 
@@ -359,16 +360,12 @@ private:
 public:
     iterator begin() {
 		iterator it;
-		it.curr_leaf.key_curr_node = invalid_rootblock_key;
 		get_block_bykey(key_head_leaf, *(it.curr_leaf));
         return it;
     }
 
     iterator end() {
 		iterator it;
-		it.curr_leaf.key_curr_node = invalid_rootblock_key;
-		get_block_bykey(key_tail_leaf, *(it.curr_leaf));
-
         return it;
     }
 
@@ -406,27 +403,32 @@ private:
 
 public:
     iterator find(const key_type& key) {
-		InnerNode node_inner;
-		LeafNode node_leaf;
 
-		if (rootblock_isleaf) {
-			if (not get_block_bykey(rootblock_key, node_leaf))
-				return end();
-		} else {
-			get_block_bykey(rootblock_key, node_inner);
-
-			while (!node_inner.nextnode_level_isleaf()) {
-				int slot = find_lower(&node_inner, key);
-				block_key_t n = node_inner.childid[slot];
-				get_block_bykey(n, node_inner);
-			}
-
-			int slot = find_lower(&node_inner, key);
-			block_key_t n = node_inner.childid[slot];
-			get_block_bykey(n, node_leaf);
+		if (rootblock_key == invalid_rootblock_key) {
+			return end();
 		}
 
-		LeafNode *leaf = &node_leaf;
+		InnerNode *node_inner = allocate_inner();
+		LeafNode *node_leaf = allocate_leaf();
+
+		if (rootblock_isleaf) {
+			get_block_bykey(rootblock_key, *node_leaf);
+		} else {
+			get_block_bykey(rootblock_key, *node_inner);
+
+			while (not node_inner->nextnode_level_isleaf()) {
+				int slot = find_lower(node_inner, key);
+				block_key_t n = node_inner->childid[slot];
+				get_block_bykey(n, *node_inner);
+			}
+
+			int slot = find_lower(node_inner, key);
+			block_key_t n = node_inner->childid[slot];
+			get_block_bykey(n, *node_leaf);
+		}
+
+		free(node_inner);
+		LeafNode *leaf = node_leaf;
         int slot = find_lower(leaf, key);
         return (slot < leaf->slotuse && key_equal(key, leaf->key(slot)))
                ? iterator(leaf, slot) : end();
