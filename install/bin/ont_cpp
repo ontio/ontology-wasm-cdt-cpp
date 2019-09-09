@@ -60,7 +60,7 @@ def compileWasm(options_for_clang):
 
     run_bashcmd(cmd)
     run_bashcmd('rm %s' % tmp_file_name)
-    optcmd = 'wasm-opt -O4 %s -o %s' % (contract_binary, contract_binary)
+    optcmd = install_dir + 'bin/wasm-opt -O4 %s -o %s' % (contract_binary, contract_binary)
     run_bashcmd(optcmd)
 
     with open(contract_binary, 'rb') as binaryfile:
