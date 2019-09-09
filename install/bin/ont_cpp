@@ -24,7 +24,7 @@ def run_bashcmd(cmd):
 
     p.communicate()
     if p.returncode != 0:
-        exit()
+        exit(1)
 
 
 def write_file_with_bytes(data, path):
@@ -43,9 +43,9 @@ def compileWasm(options_for_clang):
     undefined_symbol_option = '-Xlinker --allow-undefined-file="%s"' % tmp_file_name
 
     if not (compile_lib or print_help or front_process):
-        cmd = "clang++" + ' ' + options_for_clang + ' ' + "-Xlinker --entry=invoke" + ' ' + undefined_symbol_option
+        cmd = install_dir + "bin/clang++" + ' ' + options_for_clang + ' ' + "-Xlinker --entry=invoke" + ' ' + undefined_symbol_option
     else:
-        cmd = "clang++" + ' ' + options_for_clang
+        cmd = install_dir + "bin/clang++" + ' ' + options_for_clang
 
     if not print_help:
         cmd += " -I" + install_dir + "include/libcxx "
