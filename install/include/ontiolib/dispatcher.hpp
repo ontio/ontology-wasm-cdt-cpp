@@ -100,6 +100,7 @@ class keytable :private set<string> {
    void execute_action( datastream<const char*>& ds, R (T::*func)(Args...)  ) {
       std::tuple<std::decay_t<Args>...> args;
       ds >> args;
+	  check(ds.remaining() == 0, "not accurate match the args serialize bytes. deserialize error\n");
 
 #ifdef WASM_USE_SYS_KEYTABLE
 	  class keytable syskt;
@@ -124,6 +125,7 @@ class keytable :private set<string> {
    void execute_action( datastream<const char*>& ds, void (T::*func)(Args...)  ) {
       std::tuple<std::decay_t<Args>...> args;
       ds >> args;
+	  check(ds.remaining() == 0, "leaves more bytes. deserialize error\n");
 
 #ifdef WASM_USE_SYS_KEYTABLE
 	  class keytable syskt;
@@ -178,6 +180,9 @@ extern "C" { \
       ds >> method; \
       switch(__hash_string__::string_hash(method) ) { \
           ONTIO_DISPATCH_HELPER( TYPE, MEMBERS ) \
+		  default: \
+			check(false, "no metod to call\n")\
+			break; \
       } \
    } \
 }
@@ -191,6 +196,9 @@ extern "C" { \
       ds >> method; \
       switch(__hash_string__::string_hash(method) ) { \
           ONTIO_DISPATCH_HELPER( TYPE, MEMBERS ) \
+		  default: \
+			check(false, "no metod to call\n");\
+			break; \
       } \
    } \
 }
