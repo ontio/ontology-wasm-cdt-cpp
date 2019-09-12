@@ -437,7 +437,7 @@ class transferinner {
 
 		static bool transferfrom_inner(address addr, address sender, address from, address to, asset amount) {
 			bool success;
-			transferfrom_arg arg("transferfrom", sender, from, to, amount);
+			transferfrom_arg arg("transferFrom", sender, from, to, amount);
 			auto data = pack(arg);
 			call_native(addr, data, success);
 			return success;
