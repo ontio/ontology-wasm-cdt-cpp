@@ -1164,6 +1164,48 @@ std::vector<char> pack(Args&&... args) {
   return result;
 }
 
+typedef uint8_t TYPE_MAGIC_NEO_ARGS;
+#define CURRENT_MAGIC_VERSION 0
+template<typename T>
+std::vector<char> serialize_args_forneo( const T& value ) {
+  TYPE_MAGIC_NEO_ARGS magic_version = CURRENT_MAGIC_VERSION;
+  std::vector<char> result;
+  result.resize(pack_size(value) + sizeof(magic_version));
+
+  datastream<char*> ds( result.data(), result.size() );
+  ds << magic_version;
+  ds << value;
+  return result;
+}
+
+template<typename... Args>
+std::vector<char> serialize_args_forneo(Args&&... args) {
+  TYPE_MAGIC_NEO_ARGS magic_version = CURRENT_MAGIC_VERSION;
+  std::vector<char> result;
+  result.resize(pack_size(magic_version, args...));
+  datastream<char*> ds( result.data(), result.size());
+  std::tuple<std::decay_t<Args>...> tuple_args(std::forward<Args>(args)...);
+  ds << magic_version;
+  ds << tuple_args;
+  return result;
+}
+
+template<typename T>
+T deserialize_result_forneo( const char* buffer, size_t len ) {
+   TYPE_MAGIC_NEO_ARGS magic_version;
+   T result;
+   datastream<const char*> ds(buffer,len);
+   ds >> magic_version;
+   check(magic_version == CURRENT_MAGIC_VERSION, "result version error");
+   ds >> result;
+   return result;
+}
+
+template<typename T>
+T deserialize_result_forneo( const std::vector<char>& bytes ) {
+   return deserialize_result_forneo<T>( bytes.data(), bytes.size() );
+}
+
 template<typename Stream>
 inline void WriteVarUint( datastream<Stream>& ds, const uint64_t & v ) {
 	if (v < 0xFD){

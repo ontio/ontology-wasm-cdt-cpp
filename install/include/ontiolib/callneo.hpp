@@ -84,6 +84,7 @@ struct NeoBoolean {
 
 template<typename type>
 struct NeoInt {
+	static_assert( sizeof(type) <= sizeof(int128_t), "NeoInt suuport most sizeof(int128_t) size" );
 	type value;
 	
 	template<typename DataStream>
@@ -115,24 +116,28 @@ struct NeoInt {
 		uint32_t size;
 		ds >> ttype;
 		ds >> size;
+		check(ttype == IntType, "IntType error");
+		check(size <= sizeof(v.value), "int size overflow");
 		if (size == 0) {
 			v.value = 0;
-			assert(size == 0);
 		} else {
-			ds >> v.value;
-			assert((size == sizeof(type)) or (size == sizeof(type) + 1));
+			v.value = 0;
+			vector<char> res;
+			res.resize(size);
+			ds.read(res.data(), res.size());
+			std::copy(res.begin(), res.end(), ((uint8_t *)&(v.value)));
 		}
-		assert(ttype == IntType);
 		return ds;
 	}
 };
 
-struct NeoH256: public H256 {
+struct NeoH256 {
+	H256 value;
 	string tohexstring(void) const {
 		string s;
 		s.resize(64);
 		int index = 0;
-		for(auto it = begin(); it != end(); it++) {
+		for(auto it = value.begin(); it != value.end(); it++) {
 			uint8_t high = *it/16, low = *it%16;
 			s[index] = (high<10) ? ('0' + high) : ('a' + high - 10);
 			s[index + 1] = (low<10) ? ('0' + low) : ('a' + low - 10);
@@ -142,7 +147,7 @@ struct NeoH256: public H256 {
 	}
 
 	void debugout(void) {
-		for(auto it = begin(); it != end(); it++) {
+		for(auto it = value.begin(); it != value.end(); it++) {
 			printf("%02x", *it);
 		}
 		printf("\n");
@@ -152,7 +157,7 @@ struct NeoH256: public H256 {
 	friend DataStream& operator<<( DataStream& ds, const NeoH256& v ) {
 		uint8_t type = H256Type;
 		ds << type;
-		return ds << static_cast<const H256&>(v);
+		return ds << v.value;
 	}
 
 	template<typename DataStream>
@@ -160,8 +165,8 @@ struct NeoH256: public H256 {
 		uint8_t type;
 		uint32_t size;
 		ds >> type;
-		assert(type == H256Type);
-		return ds >> static_cast<H256&>(v);
+		check(type == H256Type, "H256Type wrong");
+		return ds >> v.value;
 	}
 };
 
@@ -189,6 +194,7 @@ struct NeoList {
 		return ds >> v.value;
 	}
 };
+
 
 }
 

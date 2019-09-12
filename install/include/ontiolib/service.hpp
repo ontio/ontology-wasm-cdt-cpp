@@ -88,6 +88,16 @@ void call_contract(const address &addr, const std::vector<char> &v, T &t) {
 	t = unpack<T>(res);
 }
 
+/* if type T is a vector or map. the length only can get from outputlen. */
+template<typename T>
+void call_neo_contract(const address &addr, const std::vector<char> &v, T &t) {
+	size_t outputlen = ::ontio_call_contract((void*)addr.data(), v.data(), v.size());
+	std::vector<char> res;
+	res.resize(outputlen);
+	::ontio_get_call_output(res.data());
+	t = deserialize_result_forneo<T>(res);
+}
+
 template<typename T>
 void get_call_output(T &t) {
 	size_t outputlen = ::ontio_call_output_length();
@@ -100,8 +110,19 @@ void get_call_output(T &t) {
 address contract_migrate(const std::vector<char> &code, const uint32_t &vmtype, const std::string &name, const std::string &version, const std::string &author, const std::string &email, const std::string &desc) {
 	address addr;
 	size_t len = ::ontio_contract_migrate(code.data(), code.size(), vmtype, name.data(), name.size(), version.data(), version.size(), author.data(), author.size(), email.data(), email.size(), desc.data(), desc.size(), addr.data());
-	ontio_assert(len == ADDRLENGTH, "contract_migrateerror. address must be 20 bytes.");
+	check(len == ADDRLENGTH, "contract_migrateerror. address must be 20 bytes.");
 	return addr;
+}
+
+address contract_create(const std::vector<char> &code, const uint32_t &vmtype, const std::string &name, const std::string &version, const std::string &author, const std::string &email, const std::string &desc) {
+	address addr;
+	size_t len = ::ontio_contract_create(code.data(), code.size(), vmtype, name.data(), name.size(), version.data(), version.size(), author.data(), author.size(), email.data(), email.size(), desc.data(), desc.size(), addr.data());
+	check(len == ADDRLENGTH, "contract_migrateerror. address must be 20 bytes.");
+	return addr;
+}
+
+void contract_delete(void) {
+	::ontio_contract_delete();
 }
 
 /* similar with call_contract, then get the output. the val length also can not assure by smartcontract. like std::vector, std::map. etc. this will get any num element. */
@@ -135,6 +156,14 @@ void storage_put(const key &key, const T &val) {
 
 void storage_delete(const key& key) {
 	::ontio_storage_delete(key.data(), key.size());
+}
+
+uint32_t block_height(void) {
+	return ::ontio_block_height();
+}
+
+uint64_t timestamp(void) {
+	return ::ontio_timestamp();
 }
 
 #define make_key pack
