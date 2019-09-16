@@ -121,8 +121,8 @@ address contract_create(const std::vector<char> &code, const uint32_t &vmtype, c
 	return addr;
 }
 
-void contract_delete(void) {
-	::ontio_contract_delete();
+void contract_destroy(void) {
+	::ontio_contract_destroy();
 }
 
 /* similar with call_contract, then get the output. the val length also can not assure by smartcontract. like std::vector, std::map. etc. this will get any num element. */

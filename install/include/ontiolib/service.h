@@ -27,7 +27,7 @@ void ontio_storage_write(const void *keyptr, const size_t keylen, const void *va
 void ontio_storage_delete(const void *keyptr, const size_t keylen);
 size_t ontio_contract_migrate(const void *codeptr,const size_t codelen, const uint32_t needstorage, const void *nameptr, const size_t namelen, const void *versionptr, const size_t versionlen, const void *authorptr, const size_t authorlen, const void *emailptr, const size_t emaillen, const void *descptr, const size_t desclen, const void *newaddrptr);
 size_t ontio_contract_create(const void *codeptr,const size_t codelen, const uint32_t needstorage, const void *nameptr, const size_t namelen, const void *versionptr, const size_t versionlen, const void *authorptr, const size_t authorlen, const void *emailptr, const size_t emaillen, const void *descptr, const size_t desclen, const void *newaddrptr);
-void ontio_contract_delete(void);
+void ontio_contract_destroy(void);
 //void abort(void *msg, size_t len);
 #ifdef __cplusplus
 }
