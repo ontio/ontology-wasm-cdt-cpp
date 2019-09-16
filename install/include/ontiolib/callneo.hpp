@@ -32,7 +32,7 @@ struct NeoByteArray :public std::vector<uint8_t> {
 		uint32_t size;
 		ds >> type;
 		ds >> size;
-		assert(type == ByteArrayType);
+		check(type == ByteArrayType, "NeoByteArray type error");
 		v.resize(size);
 		ds.read((char *) v.data(), v.size() );
 		return ds;
@@ -55,7 +55,7 @@ struct NeoAddress {
 		uint8_t type;
 		ds >> type;
 		ds >> v.value;
-		assert(type == AddressType);
+		check(type == AddressType, "NeoAddress type error");
 		return ds;
 	}
 };
@@ -76,7 +76,7 @@ struct NeoBoolean {
 		uint8_t type;
 		ds >> type;
 		ds >> v.value;
-		assert(type == BooleanType);
+		check(type == BooleanType, "NeoBoolean type error");
 		return ds;
 	}
 };
@@ -116,8 +116,8 @@ struct NeoInt {
 		uint32_t size;
 		ds >> ttype;
 		ds >> size;
-		check(ttype == IntType, "IntType error");
-		check(size <= sizeof(v.value), "int size overflow");
+		check(ttype == IntType, "NeoInt type error");
+		check(size <= sizeof(v.value), "NeoInt size overflow");
 		if (size == 0) {
 			v.value = 0;
 		} else {
@@ -177,7 +177,7 @@ struct NeoList {
 	template<typename DataStream>
 	friend DataStream& operator<<( DataStream& ds, const NeoList& v ) {
 		uint8_t type = ListType;
-		uint32_t size = pack_size(v.value);
+		uint32_t size = sizeof...(Args);
 		ds << type;
 		ds << size;
 		return ds << v.value;
@@ -189,8 +189,8 @@ struct NeoList {
 		uint32_t size;
 		ds >> type;
 		ds >> size;
-		assert(type == ListType);
-		assert(ds.remaining() == size);
+		check(type == ListType, "NeoList type error");
+		check(size == sizeof...(Args), "NeoList size error");
 		return ds >> v.value;
 	}
 };
