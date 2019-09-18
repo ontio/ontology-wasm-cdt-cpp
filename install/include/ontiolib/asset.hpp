@@ -3,12 +3,13 @@
 #include <limits>
 
 namespace ontio {
+
    struct asset {
-      int64_t      amount = 0;
-      static constexpr int64_t max_amount    = (1LL << 62) - 1;
+      int128_t amount = 0;
+	  static int128_t max_amount;
 
       asset() {}
-      asset( int64_t a)
+      asset( int128_t a)
       :amount(a)
       {
          ontio::check( is_amount_within_range(), "magnitude of asset amount must be less than 2^62" );
@@ -17,7 +18,7 @@ namespace ontio {
       bool is_amount_within_range()const { return -max_amount <= amount && amount <= max_amount; }
       bool is_valid()const               { return is_amount_within_range(); }
 
-      void set_amount( int64_t a ) {
+      void set_amount( int128_t a ) {
          amount = a;
          ontio::check( is_amount_within_range(), "magnitude of asset amount must be less than 2^62" );
       }
@@ -54,40 +55,39 @@ namespace ontio {
          return result;
       }
 
-      asset& operator*=( int64_t a ) {
-         int128_t tmp = (int128_t)amount * (int128_t)a;
-         ontio::check( tmp <= max_amount, "multiplication overflow" );
-         ontio::check( tmp >= -max_amount, "multiplication underflow" );
-         amount = (int64_t)tmp;
+      asset& operator*=( int128_t a ) {
+         int128_t tmp = amount * a;
+         ontio::check( tmp/a == amount, "multiplication overflow" );
+         amount = (int128_t)tmp;
          return *this;
       }
 
-      friend asset operator*( const asset& a, int64_t b ) {
+      friend asset operator*( const asset& a, int128_t b ) {
          asset result = a;
          result *= b;
          return result;
       }
 
-      friend asset operator*( int64_t b, const asset& a ) {
+      friend asset operator*( int128_t b, const asset& a ) {
          asset result = a;
          result *= b;
          return result;
       }
 
-      asset& operator/=( int64_t a ) {
+      asset& operator/=( int128_t a ) {
          ontio::check( a != 0, "divide by zero" );
-         ontio::check( !(amount == std::numeric_limits<int64_t>::min() && a == -1), "signed division overflow" );
+         ontio::check( !(amount == std::numeric_limits<int128_t>::min() && a == -1), "signed division overflow" );
          amount /= a;
          return *this;
       }
 
-      friend asset operator/( const asset& a, int64_t b ) {
+      friend asset operator/( const asset& a, int128_t b ) {
          asset result = a;
          result /= b;
          return result;
       }
 
-      friend int64_t operator/( const asset& a, const asset& b ) {
+      friend int128_t operator/( const asset& a, const asset& b ) {
          ontio::check( b.amount != 0, "divide by zero" );
          return a.amount / b.amount;
       }
@@ -118,4 +118,5 @@ namespace ontio {
 
       ONTLIB_SERIALIZE( asset, (amount))
    };
+   int128_t asset::max_amount    = (uint128_t(1) << 126) - 1;
 }
