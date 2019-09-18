@@ -459,7 +459,7 @@ class transferinner {
 			call_native(addr , data,  balance);
 			ontio::check( balance <= asset::max_amount, "balanceof_inner. balance overflow");
 			ontio::check( balance >= -asset::max_amount, "balanceof_inner. balance underflow");
-			asset res((int64_t) balance);
+			asset res((int128_t) balance);
 			return res;
 		}
 
@@ -471,7 +471,7 @@ class transferinner {
 
 			ontio::check( balance <= asset::max_amount, "balanceof_inner. balance overflow");
 			ontio::check( balance >= -asset::max_amount, "balanceof_inner. balance underflow");
-			asset res((int64_t) balance);
+			asset res((int128_t) balance);
 
 			return res;
 		}
