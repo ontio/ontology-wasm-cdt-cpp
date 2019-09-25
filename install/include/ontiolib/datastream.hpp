@@ -1168,12 +1168,17 @@ typedef uint8_t TYPE_MAGIC_NEO_ARGS;
 #define CURRENT_MAGIC_VERSION 0
 template<typename T>
 std::vector<char> serialize_args_forneo( const T& value ) {
+  #define ArgListType 0x10
   TYPE_MAGIC_NEO_ARGS magic_version = CURRENT_MAGIC_VERSION;
+  uint8_t ltype = ArgListType;
+  uint32_t lsize = 1;
   std::vector<char> result;
-  result.resize(pack_size(value) + sizeof(magic_version));
+  result.resize(pack_size(magic_version, ltype, lsize, value));
 
   datastream<char*> ds( result.data(), result.size() );
   ds << magic_version;
+  ds << ltype;
+  ds << lsize;
   ds << value;
   return result;
 }
@@ -1181,11 +1186,16 @@ std::vector<char> serialize_args_forneo( const T& value ) {
 template<typename... Args>
 std::vector<char> serialize_args_forneo(Args&&... args) {
   TYPE_MAGIC_NEO_ARGS magic_version = CURRENT_MAGIC_VERSION;
+  #define ArgTListType 0x10
+  uint8_t ltype = ArgListType;
+  uint32_t lsize = sizeof...(args);
   std::vector<char> result;
-  result.resize(pack_size(magic_version, args...));
+  result.resize(pack_size(magic_version, ltype, lsize, args...));
   datastream<char*> ds( result.data(), result.size());
   std::tuple<std::decay_t<Args>...> tuple_args(std::forward<Args>(args)...);
   ds << magic_version;
+  ds << ltype;
+  ds << lsize;
   ds << tuple_args;
   return result;
 }
