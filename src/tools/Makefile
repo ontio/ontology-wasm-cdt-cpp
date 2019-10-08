@@ -2,7 +2,7 @@ CXX := g++
 CXXFLAGS := -fno-rtti -O3 -g -std=c++17 -fexceptions
 
 LLVM_DIR := /home/cl/install/
-JSONDIR := /home/cl/eosio.cdt/tools/jsoncons/include
+JSONDIR := /home/cl/ontio/tools/jsoncons/include
 
 # LLVM C++ options and LLVM link options
 LLVM_CXXFLAGS := `${LLVM_DIR}/bin/llvm-config --cxxflags`

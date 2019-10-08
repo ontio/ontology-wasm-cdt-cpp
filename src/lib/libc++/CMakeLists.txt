@@ -19,8 +19,13 @@ add_library(c++
 target_include_directories(c++
                            PUBLIC 
                            ${CMAKE_CURRENT_SOURCE_DIR}/libcxx/include
-                           ${CMAKE_SOURCE_DIR}/../libc/musl/arch/onto
-                           ${CMAKE_SOURCE_DIR}/../libc/musl/include)
+						   ${CMAKE_CURRENT_SOURCE_DIR}/../libc/musl/arch/onto
+                           ${CMAKE_CURRENT_SOURCE_DIR}/../libc/musl/include)
 
 target_link_libraries(c++ c)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/libcxx/include/ DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../install/include/libcxx)
+
+INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libcxx/include/
+		DESTINATION include/libcxx)
+
+INSTALL(TARGETS c++
+		ARCHIVE DESTINATION lib)

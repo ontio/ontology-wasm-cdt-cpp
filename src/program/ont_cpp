@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+import subprocess
+import sys
+import uuid
+import os
+import binascii
+
+print_help = False
+compile_lib = False
+front_process = False
+abi_gen = False
+contract_binary = 'a.out'  # default binary name a.out
+install_dir = os.path.split(os.path.realpath(__file__))[0] + "/../"
+common_option = ["--target=wasm32", "-O3", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics", "-nostdinc", "-static", "-fno-rtti -fno-exceptions", "-DBOOST_DISABLE_ASSERTS ", "-DBOOST_EXCEPTION_DISABLE ", "-std=c++17", "-Wl,--gc-sections,--merge-data-segments,-zstack-size=8192", "-Wno-unused-command-line-argument", "-s"]
+ast_option = ["--target=wasm32", "-nostdlib", "-fno-builtin", "-ffreestanding", "-fno-threadsafe-statics", "-nostdinc", "-fno-rtti -fno-exceptions", "-DBOOST_DISABLE_ASSERTS ", "-DBOOST_EXCEPTION_DISABLE ", "-std=c++17"]
+wasmvm_service = ["ontio_debug", "ontio_save_input_arg", "ontio_get_input", "ontio_input_length", "ontio_call_contract", "ontio_return", "ontio_get_call_output", "ontio_call_output_length", "ontio_timestamp", "ontio_block_height", "ontio_self_address", "ontio_caller_address", "ontio_entry_address", "ontio_get_input", "ontio_check_witness", "ontio_current_blockhash", "ontio_current_txhash", "ontio_notify", "ontio_storage_read", "ontio_storage_write", "ontio_storage_delete", "ontio_contract_create", "ontio_contract_migrate", "ontio_contract_destroy"]
+
+
+def run_bashcmd(cmd):
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p.wait()
+    for line in p.stdout.readlines():
+        print(line.decode("utf-8"), end='')
+
+    p.communicate()
+    if p.returncode != 0:
+        exit(1)
+
+
+def write_file_with_bytes(data, path):
+    with open(path, 'wb+') as out_file:
+        out_file.write(data)
+
+
+def compileWasm(options_for_clang):
+    uuid_str = (uuid.uuid4())
+    tmp_file_name = '/tmp/tmpfile_###%s.txt' % uuid_str
+
+    with open(tmp_file_name, 'w+') as out_file:
+        for symbol in wasmvm_service:
+            out_file.write(symbol + '\n')
+
+    undefined_symbol_option = '-Xlinker --allow-undefined-file="%s"' % tmp_file_name
+
+    if not (compile_lib or print_help or front_process):
+        cmd = "clang++" + ' ' + options_for_clang + ' ' + "-Xlinker --entry=invoke" + ' ' + undefined_symbol_option
+    else:
+        cmd = "clang++" + ' ' + options_for_clang
+
+    if not print_help:
+        cmd += " -I" + install_dir + "include/libcxx "
+        cmd += " -I" + install_dir + "include/libc "
+        cmd += " -I" + install_dir + "include/boost "
+        cmd += " -I" + install_dir + "include/ontiolib"
+        cmd += " -I" + install_dir + "include "
+
+    if not (compile_lib or print_help or front_process):
+        cmd += " -L" + install_dir + "lib "
+        cmd += " -lc -lc++ -lmalloc "
+
+    run_bashcmd(cmd)
+    run_bashcmd('rm %s' % tmp_file_name)
+    #optcmd = install_dir + 'bin/wasm-opt -O4 %s -o %s' % (contract_binary, contract_binary)
+    #run_bashcmd(optcmd)
+
+    with open(contract_binary, 'rb') as binaryfile:
+        codedata = binaryfile.read()
+
+    data_str = binascii.hexlify(codedata).decode('ascii')
+    with open(contract_binary + '.str', 'w') as out_file:
+        out_file.write(data_str)
+
+
+if __name__ == '__main__':
+    argv_for_clang = sys.argv[1:]
+    options_for_clang = ''
+    prev_option = None
+
+    for option in argv_for_clang:
+        if option == '-h':
+            print_help = True
+        elif option == '-c':
+            compile_lib = True
+        elif option == '-ast-dump':
+            front_process = True
+        elif option == '-abi':
+            abi_gen = True
+            continue
+
+        if prev_option == '-o':
+            contract_binary = option
+
+        if option not in common_option:
+            options_for_clang += ' ' + option
+
+        prev_option = option
+
+    if options_for_clang == '':
+        raise Exception("error: no input files")
+
+    if not (print_help or front_process):
+        for option in common_option:
+            options_for_clang += ' ' + option
+    elif front_process:
+        for option in ast_option:
+            options_for_clang += ' ' + option
+
+    compileWasm(options_for_clang)

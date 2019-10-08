@@ -160,7 +160,7 @@ class oep4 : public contract {
         return b;
     }
 };
-ONTIO_DISPATCH(oep4, (init)(transfer)(balanceOf)(allowance)(transferFrom)(approve)(name)(symbol)(totalSupply)(decimals)(transferMulti));
+ONTIO_DISPATCH(oep4, (init)(transfer)(balanceOf)(allowance)(transferFrom)(approve)(name)(symbol)(totalSupply)(decimals)(transferMulti))
 
 #ifdef WASM_LOCAL_DEBUG
 void call_init() {
