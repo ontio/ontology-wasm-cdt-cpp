@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(ontology_libraries)
+project(libc)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-everything --target=wasm32 -nostdlib -fno-builtin -ffreestanding -nostdinc  -nostdlibinc -fno-threadsafe-statics  -O3")
 
 SET(INC_SRC_FILENAMES alloca.h assert.h byteswap.h crypt.h ctype.h endian.h errno.h features.h float.h inttypes.h iso646.h 
@@ -16,7 +16,6 @@ SET(INC_INTERNAL_SRC_FILES "")
 FOREACH(FN ${INC_INTERNAL_FILENAMES})
 	LIST(APPEND INC_INTERNAL_SRC_FILES "musl/src/internal/${FN}")
 ENDFOREACH(FN)
-
 
 file(GLOB CRYPT_SOURCES  "musl/src/crypt/*.c")
 file(GLOB CTYPE_SOURCES  "musl/src/ctype/*.c")
@@ -95,6 +94,11 @@ target_include_directories(c
 						   ${CMAKE_CURRENT_SOURCE_DIR}/musl/src/internal
 						   ${CMAKE_CURRENT_SOURCE_DIR}/musl/arch/onto)
 
-file(COPY ${INC_SRC_FILES} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../install/include/libc/)
-file(COPY "musl/include/sys/stat.h" "musl/include/sys/types.h" DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../install/include/libc/sys/)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/musl/arch/onto/bits DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../install/include/libc/)
+INSTALL(FILES ${INC_SRC_FILES}
+		DESTINATION ${CMAKE_INSTALL_PREFIX}/include/libc/)
+INSTALL(FILES "musl/include/sys/stat.h" "musl/include/sys/types.h"
+		DESTINATION ${CMAKE_INSTALL_PREFIX}/include/libc/sys/)
+INSTALL(DIRECTORY "musl/arch/onto/bits" DESTINATION ${CMAKE_INSTALL_PREFIX}/include/libc/)
+
+INSTALL(TARGETS c
+		ARCHIVE DESTINATION lib)
