@@ -12,7 +12,6 @@ std::vector<char> get_input(void);
 bool check_witness(const address &v);
 H256 current_blockhash(void);
 H256 current_txhash(void);
-void notify(const std::string &s);
 address contract_migrate(const std::vector<char> &code, const uint32_t &vmtype, const std::string &name, const std::string &version, const std::string &author, const std::string &email, const std::string &desc);
 
 address self_address(void) {
@@ -64,7 +63,7 @@ void ontio_return(const T &t) {
 	::ontio_return(data.data(), data.size()); 
 }
 
-void notify(const std::string &s) {
+void notify(const std::vector<char> &s) {
 	::ontio_notify(s.data(), s.size());
 }
 

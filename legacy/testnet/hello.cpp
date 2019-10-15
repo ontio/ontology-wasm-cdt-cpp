@@ -7,7 +7,7 @@ class hello : public contract {
 public:
 	using contract::contract;
 	string myhello(string s) {
-		return s + " hello world, my name is steven";
+
 	}
 };
 
