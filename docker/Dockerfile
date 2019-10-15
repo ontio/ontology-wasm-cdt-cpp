@@ -2,6 +2,6 @@ FROM ubuntu:18.04
 
 MAINTAINER steven
 
-RUN apt update && apt -y install python3 vim wget cmake openssl && echo "export PATH=$PATH:/ontowasm/bin" >> /root/.bashrc && cd /root/
+RUN apt update && apt -y install python3 vim wget cmake openssl clang-8 llvm-8 && cd /root/
 
-RUN git clone https://github.com/ontio/ontology-wasm-cdt-cpp && cd ontology-wasm-cdt-cpp && mkdir -p build && cd build && cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_INSTALL_PREFIX="/ontowasm/bin" .. && make install
+RUN git clone --recursive https://github.com/ontio/ontology-wasm-cdt-cpp && cd ontology-wasm-cdt-cpp && bash compiler_install.bash && echo "export PATH=$PATH:$(pwd)/install/bin" >> /root/.bashrc

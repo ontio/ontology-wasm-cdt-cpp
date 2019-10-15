@@ -14,6 +14,31 @@ enum {
 	ListType  = 0x10
 };
 
+struct NeoString {
+	std::string s;
+	template<typename DataStream>
+	friend DataStream& operator<<( DataStream& ds, const NeoString& v ) {
+		uint8_t type = StringType;
+		uint32_t size = v.s.size();
+		ds << type;
+		ds << size;
+		ds.write((char *)v.s.data(), v.s.size());
+		return ds;
+	}
+
+	template<typename DataStream>
+	friend DataStream& operator>>( DataStream& ds, NeoString& v ) {
+		uint8_t type;
+		uint32_t size;
+		ds >> type;
+		ds >> size;
+		check(type == StringType, "NeoString type error");
+		v.s.resize(size);
+		ds.read((char *) v.s.data(), v.s.size() );
+		return ds;
+	}
+};
+
 struct NeoByteArray :public std::vector<uint8_t> {
 	using vector::vector;
 

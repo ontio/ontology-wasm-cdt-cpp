@@ -1216,6 +1216,41 @@ T deserialize_result_forneo( const std::vector<char>& bytes ) {
    return deserialize_result_forneo<T>( bytes.data(), bytes.size() );
 }
 
+template<typename T>
+std::vector<char> make_notify_buffer( const T& value ) {
+  std::vector<char> result;
+  result.resize(pack_size(uint32_t(0), value));
+
+  datastream<char*> ds( result.data(), result.size() );
+  // "evt\x00"
+  ds << uint8_t(0x65);
+  ds << uint8_t(0x76);
+  ds << uint8_t(0x74);
+  ds << uint8_t(0x00);
+  ds << value;
+  return result;
+}
+
+template<typename T, typename... Args>
+std::vector<char> make_notify_buffer(const T &arg0, Args&&... args) {
+  #define ArgTListType 0x10
+  uint8_t ltype = ArgListType;
+  uint32_t lsize = sizeof...(args) + 1;
+  std::vector<char> result;
+  result.resize(pack_size(uint32_t(0), ltype, lsize, arg0, args...));
+  datastream<char*> ds( result.data(), result.size());
+  std::tuple<T,std::decay_t<Args>...> tuple_args(arg0, std::forward<Args>(args)...);
+  // "evt\x00"
+  ds << uint8_t(0x65);
+  ds << uint8_t(0x76);
+  ds << uint8_t(0x74);
+  ds << uint8_t(0x00);
+  ds << ltype;
+  ds << lsize;
+  ds << tuple_args;
+  return result;
+}
+
 template<typename Stream>
 inline void WriteVarUint( datastream<Stream>& ds, const uint64_t & v ) {
 	if (v < 0xFD){
