@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.4.3)
 project(CompilerRTBuiltins)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-everything --target=wasm32 -nostdlib -fno-builtin -ffreestanding  -fno-threadsafe-statics  -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wno-everything --target=wasm32 -nostdlib -fno-builtin -ffreestanding  -fno-threadsafe-statics  -O3  -fno-rtti -fno-exceptions")
 
 set(GENERIC_SOURCES
   absvdi2.c
@@ -165,6 +167,11 @@ set(wasm64_SOURCES
 
 #add_custom_target(builtins)
 add_library(builtins ${wasm32_SOURCES})
+
+target_include_directories(builtins
+                           PUBLIC 
+                           ${CMAKE_CURRENT_SOURCE_DIR}/../libc/musl/arch/onto
+                           ${CMAKE_CURRENT_SOURCE_DIR}/../libc/musl/include)
 
 INSTALL(TARGETS builtins
 		ARCHIVE DESTINATION lib)
