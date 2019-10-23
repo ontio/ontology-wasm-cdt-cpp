@@ -245,6 +245,9 @@ void ontio_return(const T &t) {
 	debug_prefix_ontio_contract_return_wasm_local_debug = data;
 }
 
+void notify(const std::vector<char> &s) {
+}
+
 void notify(const std::string &s) {
 	printf("%s\n", s.c_str());
 }
