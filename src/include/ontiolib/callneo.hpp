@@ -3,6 +3,7 @@ using std::tuple;
 using std::array;
 
 namespace ontio {
+namespace ontio_internal_namespace  {
 enum { 
 	ByteArrayType = 0x00,
 	StringType = 0x01,
@@ -23,6 +24,22 @@ void notify_type(DataStream &ds, const std::string &s) {
 	ds.write((char *)s.data(), s.size());
 }
 
+template<typename DataStream>
+void get_notify_type(DataStream &ds, std::string &s) {
+	uint8_t type = 0xff; //never right type;
+	uint32_t size = 0;
+	ds >> type; check(type == ByteArrayType, "[Type error]: string expect ByteArrayType");
+	ds >> size;
+	if (size != 0) {
+		std::vector<char> tmp;
+		tmp.resize(size);
+		ds.read((char *)tmp.data(), tmp.size());
+		s = std::string(tmp.data(),tmp.data()+tmp.size());
+	}
+	else
+		s = std::string();
+}
+
 // fixed string like call("transfer");
 template<typename DataStream, typename T, std::size_t N, std::enable_if_t<std::is_same<T,char>::value>* = nullptr>
 void notify_type( DataStream& ds, const T (&v)[N] ) {
@@ -30,6 +47,7 @@ void notify_type( DataStream& ds, const T (&v)[N] ) {
 	uint32_t size = N - 1;
 	ds << type;
 	ds << size ;
+	// con not ds >> v. size has N - 1. delete the '\0' byte.
 	ds.write((char *)v, size);
 }
 
@@ -38,6 +56,15 @@ void notify_type(DataStream &ds, const address &t) {
 	uint8_t type = AddressType;
 	ds << type;
 	ds << t;
+}
+
+template<typename DataStream>
+void get_notify_type(DataStream &ds, address &t) {
+	uint8_t type = 0xff; //never right type;
+	uint32_t size = 0;
+	ds >> type; check(type == ByteArrayType, "[Type error]: address expect ByteArrayType");
+	ds >> size; check(size == 20, "[Address len error]: expect 20 Bytes");
+	ds >> t;
 }
 
 template<typename DataStream>
@@ -50,12 +77,32 @@ void notify_type(DataStream &ds, const std::vector<uint8_t> &v) {
 }
 
 template<typename DataStream>
+void get_notify_type(DataStream &ds, std::vector<uint8_t> &t) {
+	uint8_t type = 0xff; //never right type;
+	uint32_t size = 0;
+	ds >> type; check(type == ByteArrayType, "[Type error]: vector<uint8_t> expect ByteArrayType");
+	ds >> size;
+	t.resize(size);
+	ds.read((char *)t.data(),t.size());
+}
+
+template<typename DataStream>
 void notify_type(DataStream &ds, const std::vector<char> &v) {
 	uint8_t type = ByteArrayType;
 	uint32_t size = v.size();
 	ds << type;
 	ds << size;
 	ds.write((char *)v.data(), v.size());
+}
+
+template<typename DataStream>
+void get_notify_type(DataStream &ds, std::vector<char> &t) {
+	uint8_t type = 0xff; //never right type;
+	uint32_t size = 0;
+	ds >> type; check(type == ByteArrayType, "[Type error]: vector<uint8_t> expect ByteArrayType");
+	ds >> size;
+	t.resize(size);
+	ds.read((char *)t.data(),t.size());
 }
 
 template<typename DataStream>
@@ -66,10 +113,27 @@ void notify_type(DataStream &ds, const bool &v) {
 }
 
 template<typename DataStream>
+void get_notify_type(DataStream &ds, bool &v) {
+	uint8_t type = 0xff;
+	ds >> type; check(type == BooleanType, "[Type error]: bool expect BooleanType");
+	ds >> v;
+}
+
+template<typename DataStream>
 void notify_type(DataStream &ds, const H256 &v) {
 	uint8_t type = H256Type;
 	ds << type;
 	ds << v;
+}
+
+template<typename DataStream>
+void get_notify_type(DataStream &ds, H256 &v) {
+	uint8_t type = 0xff;
+	uint32_t size = 0;
+	// wasm call neovm consider return val address/string/h256/bytearray to ByteArrayType.
+	ds >> type; check(type == ByteArrayType, "[Type error]: bool expect H256Type");
+	ds >> size; check(size == 32, "[Size error]: H256 should be 32 Bytes.");
+	ds >> v;
 }
 
 template<typename DataStream, typename... Args>
@@ -169,6 +233,27 @@ void notify_type(DataStream &ds,const T &value ,std::enable_if_t<std::is_integra
 	ds << tv;
 }
 
+template<typename T>
+bool check_integer_overflow(const int128_t &value, T &com, std::enable_if_t<std::is_integral<T>::value>* = nullptr) {
+	if (value > std::numeric_limits<T>::max() || value < std::numeric_limits<T>::min()) {
+		return false;
+	}
+
+	return true;
+}
+
+template<typename DataStream, typename T>
+void get_notify_type(DataStream &ds, T &value ,std::enable_if_t<std::is_integral<T>::value>* = nullptr) {
+	static_assert(sizeof(T) <= sizeof(int128_t), "[use type error]: can only use max typesize int128_t");
+	uint8_t ttype = 0;
+	int128_t tv;
+	ds >> ttype;
+	check(ttype == IntType, "NeoInt type error");
+	ds >> tv;
+	check(check_integer_overflow(tv, value), "[interger overflow error]: should pass the bigger size type, like int128_t.");
+	value = (T)tv;
+}
+
 template<typename DataStream, typename T, std::enable_if_t<_datastream_detail::is_pointer<T>()>* = nullptr>
 void notify_type(DataStream &ds, T) {
 	static_assert(!_datastream_detail::is_pointer<T>(), "Pointers should not be notified");
@@ -192,13 +277,22 @@ size_t notify_size(Args&&... args) {
   return ds.tellp();
 }
 
+template<typename T>
+void unpack_neoargs(const std::vector<char>& v, T &t) {
+   uint8_t magic_version;
+   datastream<const char*> ds(v.data(),v.size());
+   ds >> magic_version;
+   check(magic_version == 0, "result version error");
+   get_notify_type(ds, t);
+}
+}
+
 template<typename... Args>
 void notify_event(Args&&... args) {
-  #define ArgTListType 0x10
-  uint8_t ltype = ArgListType;
+  uint8_t ltype = ontio_internal_namespace::ListType;
   uint32_t lsize = sizeof...(args);
-  size_t size = notify_size(args...);
-  size = size + pack_size(uint32_t(0),ltype, lsize); // for magic "evt\x00" and one byte ArgTListType
+  size_t size = ontio_internal_namespace::notify_size(args...);
+  size = size + ontio_internal_namespace::pack_size(uint32_t(0),ltype, lsize); // for magic "evt\x00" and one byte ArgTListType
   std::vector<char> result;
   result.resize(size);
   datastream<char*> ds( result.data(), result.size());
@@ -210,19 +304,17 @@ void notify_event(Args&&... args) {
   ds << ltype;
   ds << lsize;
 
-  notify_event_buff(ds, args...);
+  ontio_internal_namespace::notify_event_buff(ds, args...);
   notify(result);
 }
 
-
 template<typename... Args>
-std::vector<char> serialize_args_forneo_t(Args&&... args) {
+std::vector<char> pack_neoargs(Args&&... args) {
   uint8_t magic_version = 0;
-  #define ArgTListType 0x10
-  uint8_t ltype = ArgListType;
+  uint8_t ltype = ontio_internal_namespace::ListType;
   uint32_t lsize = sizeof...(args);
-  size_t size = notify_size(args...);
-  size = size + pack_size(magic_version,ltype, lsize); // for magic "evt\x00" and one byte ArgTListType
+  size_t size = ontio_internal_namespace::notify_size(args...);
+  size = size + ontio_internal_namespace::pack_size(magic_version,ltype, lsize); // for magic "evt\x00" and one byte ArgTListType
   std::vector<char> result;
   result.resize(size);
   datastream<char*> ds( result.data(), result.size());
@@ -231,10 +323,11 @@ std::vector<char> serialize_args_forneo_t(Args&&... args) {
   ds << ltype;
   ds << lsize;
 
-  notify_event_buff(ds, args...);
+  ontio_internal_namespace::notify_event_buff(ds, args...);
   return result;
 }
 
+/*
 struct NeoString {
 	std::string s;
 	template<typename DataStream>
@@ -419,11 +512,7 @@ struct NeoList {
 		return ds >> v.value;
 	}
 };
-
-
-
-
-
+*/
 }
 
 
