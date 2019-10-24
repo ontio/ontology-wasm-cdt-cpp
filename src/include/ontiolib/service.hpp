@@ -84,9 +84,13 @@ void call_contract(const address &addr, const std::vector<char> &v, T &t) {
 	std::vector<char> res;
 	res.resize(outputlen);
 	::ontio_get_call_output(res.data());
-	t = unpack<T>(res);
+	t = ontio_internal_namespace::unpack<T>(res);
 }
 
+namespace ontio_internal_namespace {
+template<typename T>
+void unpack_neoargs(const std::vector<char>& v, T &t);
+}
 /* if type T is a vector or map. the length only can get from outputlen. */
 template<typename T>
 void call_neo_contract(const address &addr, const std::vector<char> &v, T &t) {
@@ -94,7 +98,7 @@ void call_neo_contract(const address &addr, const std::vector<char> &v, T &t) {
 	std::vector<char> res;
 	res.resize(outputlen);
 	::ontio_get_call_output(res.data());
-	t = deserialize_result_forneo<T>(res);
+	ontio_internal_namespace::unpack_neoargs(res,t);
 }
 
 template<typename T>
@@ -103,7 +107,7 @@ void get_call_output(T &t) {
 	std::vector<char> res;
 	res.resize(outputlen);
 	::ontio_get_call_output(res.data());
-	t = unpack<T>(res);
+	t = ontio_internal_namespace::unpack<T>(res);
 }
 
 address contract_migrate(const std::vector<char> &code, const uint32_t &vmtype, const std::string &name, const std::string &version, const std::string &author, const std::string &email, const std::string &desc) {
@@ -128,7 +132,7 @@ void contract_destroy(void) {
 template<typename T>
 bool storage_get(const key &key, T &val) {
 	std::vector<char> s;
-	size_t initlength = pack_size(val);
+	size_t initlength = ontio_internal_namespace::pack_size(val);
 	s.resize(initlength);
 	size_t length = ::ontio_storage_read(key.data(), key.size(), s.data(), s.size(), 0);
 	if (length == UINT32_MAX) {
@@ -143,7 +147,7 @@ bool storage_get(const key &key, T &val) {
 		::ontio_storage_read(key.data(), key.size(), s.data(), s.size(), 0);
 	}
 
-	val = unpack<T>(s);
+	val = ontio_internal_namespace::unpack<T>(s);
 	return true;
 }
 
@@ -254,7 +258,7 @@ void notify(const std::string &s) {
 
 template<typename T>
 void get_call_output(T &t) {
-	t = unpack<T>(debug_prefix_ontio_contract_return_wasm_local_debug);
+	t =	ontio_internal_namespace::unpack<T>(debug_prefix_ontio_contract_return_wasm_local_debug);
 }
 
 template<typename T>
@@ -284,7 +288,7 @@ bool storage_get(const key &key, T &val) {
 	auto iter = debug_prefix_ontio_storage_debug_map.find(key);
 	if (iter != debug_prefix_ontio_storage_debug_map.end()) {
 		vector<char> s = iter->second;
-		val = unpack<T>(s);
+		val = ontio_internal_namespace::unpack<T>(s);
 		return true;
 	}
 	else

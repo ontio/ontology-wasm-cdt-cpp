@@ -1076,14 +1076,7 @@ DataStream& operator>>( DataStream& ds, T& v ) {
    return ds;
 }
 
-/**
- * Defines data stream for reading and writing data in the form of bytes
- *
- * @addtogroup datastream Data Stream
- * @ingroup cpp_api
- * @{
- */
-
+namespace ontio_internal_namespace {
 /**
  * Unpack data inside a fixed size buffer as T
  *
@@ -1135,6 +1128,7 @@ size_t pack_size( const T& first, Args&&... args) {
   ps << first;
   return (ps.tellp() + pack_size(std::forward<Args>(args)...));
 }
+}
 
 /**
  * Get packed data
@@ -1147,7 +1141,7 @@ size_t pack_size( const T& first, Args&&... args) {
 template<typename T>
 std::vector<char> pack( const T& value ) {
   std::vector<char> result;
-  result.resize(pack_size(value));
+  result.resize(ontio_internal_namespace::pack_size(value));
 
   datastream<char*> ds( result.data(), result.size() );
   ds << value;
@@ -1157,96 +1151,9 @@ std::vector<char> pack( const T& value ) {
 template<typename... Args>
 std::vector<char> pack(Args&&... args) {
   std::vector<char> result;
-  result.resize(pack_size(args...));
+  result.resize(ontio_internal_namespace::pack_size(args...));
   datastream<char*> ds( result.data(), result.size());
   std::tuple<std::decay_t<Args>...> tuple_args(std::forward<Args>(args)...);
-  ds << tuple_args;
-  return result;
-}
-
-typedef uint8_t TYPE_MAGIC_NEO_ARGS;
-#define CURRENT_MAGIC_VERSION 0
-template<typename T>
-std::vector<char> serialize_args_forneo( const T& value ) {
-  #define ArgListType 0x10
-  TYPE_MAGIC_NEO_ARGS magic_version = CURRENT_MAGIC_VERSION;
-  uint8_t ltype = ArgListType;
-  uint32_t lsize = 1;
-  std::vector<char> result;
-  result.resize(pack_size(magic_version, ltype, lsize, value));
-
-  datastream<char*> ds( result.data(), result.size() );
-  ds << magic_version;
-  ds << ltype;
-  ds << lsize;
-  ds << value;
-  return result;
-}
-
-template<typename... Args>
-std::vector<char> serialize_args_forneo(Args&&... args) {
-  TYPE_MAGIC_NEO_ARGS magic_version = CURRENT_MAGIC_VERSION;
-  #define ArgTListType 0x10
-  uint8_t ltype = ArgListType;
-  uint32_t lsize = sizeof...(args);
-  std::vector<char> result;
-  result.resize(pack_size(magic_version, ltype, lsize, args...));
-  datastream<char*> ds( result.data(), result.size());
-  std::tuple<std::decay_t<Args>...> tuple_args(std::forward<Args>(args)...);
-  ds << magic_version;
-  ds << ltype;
-  ds << lsize;
-  ds << tuple_args;
-  return result;
-}
-
-template<typename T>
-T deserialize_result_forneo( const char* buffer, size_t len ) {
-   TYPE_MAGIC_NEO_ARGS magic_version;
-   T result;
-   datastream<const char*> ds(buffer,len);
-   ds >> magic_version;
-   check(magic_version == CURRENT_MAGIC_VERSION, "result version error");
-   ds >> result;
-   return result;
-}
-
-template<typename T>
-T deserialize_result_forneo( const std::vector<char>& bytes ) {
-   return deserialize_result_forneo<T>( bytes.data(), bytes.size() );
-}
-
-template<typename T>
-std::vector<char> make_notify_buffer( const T& value ) {
-  std::vector<char> result;
-  result.resize(pack_size(uint32_t(0), value));
-
-  datastream<char*> ds( result.data(), result.size() );
-  // "evt\x00"
-  ds << uint8_t(0x65);
-  ds << uint8_t(0x76);
-  ds << uint8_t(0x74);
-  ds << uint8_t(0x00);
-  ds << value;
-  return result;
-}
-
-template<typename T, typename... Args>
-std::vector<char> make_notify_buffer(const T &arg0, Args&&... args) {
-  #define ArgTListType 0x10
-  uint8_t ltype = ArgListType;
-  uint32_t lsize = sizeof...(args) + 1;
-  std::vector<char> result;
-  result.resize(pack_size(uint32_t(0), ltype, lsize, arg0, args...));
-  datastream<char*> ds( result.data(), result.size());
-  std::tuple<T,std::decay_t<Args>...> tuple_args(arg0, std::forward<Args>(args)...);
-  // "evt\x00"
-  ds << uint8_t(0x65);
-  ds << uint8_t(0x76);
-  ds << uint8_t(0x74);
-  ds << uint8_t(0x00);
-  ds << ltype;
-  ds << lsize;
   ds << tuple_args;
   return result;
 }

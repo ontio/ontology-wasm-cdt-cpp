@@ -62,6 +62,7 @@ std::array<uint8_t,size> hexstobytes(const std::string& hex) {
     return bytes;
 }
 
+namespace ontio_internal_namespace {
 class transferinner {
     private:
 	class native_address {
@@ -477,8 +478,10 @@ class transferinner {
 		}
 };
 
+}
 
-class ont: transferinner {
+
+class ont: ontio_internal_namespace::transferinner {
 	private:
 		static address ontaddr;
 	public:
@@ -499,7 +502,7 @@ class ont: transferinner {
 		}
 };
 
-class ong: public transferinner {
+class ong: public ontio_internal_namespace::transferinner {
 	private:
 		static address ongaddr;
 	public:
