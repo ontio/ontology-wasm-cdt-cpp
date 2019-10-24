@@ -16,6 +16,25 @@ enum {
 };
 
 template<typename DataStream>
+void notify_type(DataStream &ds, const asset &a) {
+	static_assert(sizeof(a) == sizeof(int128_t), "[type size error]: asset should be int128_t");
+	uint8_t ttype = IntType;
+
+	ds << ttype;
+	ds << a;
+}
+
+template<typename DataStream>
+void get_notify_type(DataStream &ds, asset &a) {
+	static_assert(sizeof(a) == sizeof(int128_t), "[type size error]: asset should be int128_t");
+	int128_t tv;
+	uint8_t ttype;
+	ds >> ttype;
+	check(ttype == IntType, "[Type error]: asset expect IntType");
+	ds >> a;
+}
+
+template<typename DataStream>
 void notify_type(DataStream &ds, const std::string &s) {
 	uint8_t type = StringType;
 	uint32_t size = s.size();
@@ -131,7 +150,7 @@ void get_notify_type(DataStream &ds, H256 &v) {
 	uint8_t type = 0xff;
 	uint32_t size = 0;
 	// wasm call neovm consider return val address/string/h256/bytearray to ByteArrayType.
-	ds >> type; check(type == ByteArrayType, "[Type error]: bool expect H256Type");
+	ds >> type; check(type == ByteArrayType, "[Type error]: H256 expect ByteArrayType");
 	ds >> size; check(size == 32, "[Size error]: H256 should be 32 Bytes.");
 	ds >> v;
 }

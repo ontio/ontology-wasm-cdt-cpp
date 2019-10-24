@@ -30,6 +30,7 @@ class hello: public contract {
 		address ttt3[] = {addr[0], addr[1], addr[2]};
 		int32_t ttt4[] = {1,2,3,4,5};
 		std::array<address,2> ttt5 = {addr[3], addr[4]};
+		std::pair<string, H256> ttt6 = {"test pair", a3};
 		notify_event("transfer",s,t, b, a0, a1, a2, a3, arg1, x, ttt, ttt0, ttt1, ttt2, ttt3, ttt4, ttt5);
 		notify_event("transfer", "my name is steven");
 		notify_event(s);
@@ -47,6 +48,7 @@ class hello: public contract {
 		notify_event(ttt3);
 		notify_event(ttt4);
 		notify_event(ttt5);
+		notify_event(ttt6);
 	}
 };
 
