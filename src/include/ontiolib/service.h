@@ -20,6 +20,7 @@ void ontio_return(const void *res, const size_t len);
 void ontio_notify(const void *msg, const size_t len);
 //void debug(void *msg, size_t len);
 void ontio_debug( const char* cstr, const uint32_t len);
+void ontio_panic( const char* cstr, const uint32_t len);
 /*return the output length.*/
 size_t ontio_call_contract(const void *contract_address,const void *input, const size_t len);
 size_t ontio_storage_read(const void *keyptr, const size_t keylen, const void *valptr, const size_t vlen, const size_t offset);
