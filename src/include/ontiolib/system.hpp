@@ -8,21 +8,22 @@
 
 namespace ontio {
 
+   extern "C" void ontio_panic( const char* cstr, const uint32_t len);
    inline void check(bool pred, const char* msg) {
       if (!pred) {
-         ontio_assert(false, msg);
+		 ontio_panic(msg, strlen(msg));
       }
    }
 
    inline void check(bool pred, const std::string& msg) {
       if (!pred) {
-         ontio_assert(false, msg.c_str());
+		 ontio_panic((char *)msg.c_str(), msg.size());
       }
    }
 
    inline void check(bool pred, std::string&& msg) {
       if (!pred) {
-         ontio_assert(false, msg.c_str());
+		 ontio_panic((char *)msg.c_str(), msg.size());
       }
    }
 }

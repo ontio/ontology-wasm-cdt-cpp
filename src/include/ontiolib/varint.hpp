@@ -3,7 +3,7 @@
  *  @copyright defined in ont/LICENSE
  */
 #pragma once
-
+namespace ontio {
 struct unsigned_int {
     unsigned_int( uint32_t v = 0 ):value(v){}
 
@@ -44,7 +44,7 @@ struct unsigned_int {
     template<typename DataStream>
     friend DataStream& operator << ( DataStream& ds, const unsigned_int& v ){
 	uint64_t val = v.value;
-    WriteVarUint(ds, val);
+	WriteVarUint(ds, val);
 	return ds;
     }
 
@@ -272,5 +272,4 @@ struct signed_int {
       return ds;
     }
 };
-
-/// @}
+}
