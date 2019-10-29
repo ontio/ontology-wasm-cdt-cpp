@@ -56,7 +56,7 @@ def compileWasm(options_for_clang):
 
     if not (compile_lib or print_help or front_process):
         cmd += " -L" + install_dir + "lib "
-        cmd += " -lc -lc++ -lmalloc "
+        cmd += " -lc -lc++ -lmalloc -lbase58 -lbuiltins"
 
     cmd += " -o " + contract_binary
 

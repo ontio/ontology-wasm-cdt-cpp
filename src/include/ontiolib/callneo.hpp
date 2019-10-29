@@ -15,6 +15,36 @@ enum {
 	ListType  = 0x10
 };
 
+template<typename DataStream, typename T>
+void notify_type(DataStream &ds,const T &value ,std::enable_if_t<std::is_integral<T>::value>* = nullptr) {
+	uint8_t ttype = IntType;
+	int128_t tv = int128_t(value);
+
+	ds << ttype;
+	ds << tv;
+}
+
+template<typename T>
+bool check_integer_overflow(const int128_t &value, T &com, std::enable_if_t<std::is_integral<T>::value>* = nullptr) {
+	if (value > std::numeric_limits<T>::max() || value < std::numeric_limits<T>::min()) {
+		return false;
+	}
+
+	return true;
+}
+
+template<typename DataStream, typename T>
+void get_notify_type(DataStream &ds, T &value ,std::enable_if_t<std::is_integral<T>::value>* = nullptr) {
+	static_assert(sizeof(T) <= sizeof(int128_t), "[use type error]: can only use max typesize int128_t");
+	uint8_t ttype = 0;
+	int128_t tv;
+	ds >> ttype;
+	check(ttype == IntType, "NeoInt type error");
+	ds >> tv;
+	check(check_integer_overflow(tv, value), "[interger overflow error]: should pass the bigger size type, like int128_t.");
+	value = (T)tv;
+}
+
 template<typename DataStream>
 void notify_type(DataStream &ds, const asset &a) {
 	static_assert(sizeof(a) == sizeof(int128_t), "[type size error]: asset should be int128_t");
@@ -166,7 +196,19 @@ void notify_type(DataStream &ds,const std::tuple<Args...>& t) {
 	});
 }
 
-template<typename DataStream, typename T>
+template<typename DataStream, typename... Args>
+void get_notify_type(DataStream &ds,std::tuple<Args...>& t) {
+	uint8_t type;
+	uint32_t size;
+	ds >> type; check(type == ListType, "[Type error]: tuple expect ListType");
+	ds >> size; check(size == sizeof...(Args), "[Size error]: tuple not match list size");
+
+	boost::fusion::for_each( t, [&]( auto& i ) {
+		get_notify_type(ds, i);
+	});
+}
+
+template<typename DataStream, typename T, std::enable_if_t<!(std::is_same<T,char>::value || std::is_same<T,uint8_t>::value)>* = nullptr>
 void notify_type(DataStream &ds,const std::vector<T>& v) {
 	uint8_t type = ListType;
 	uint32_t size = v.size();
@@ -174,6 +216,18 @@ void notify_type(DataStream &ds,const std::vector<T>& v) {
 	ds << size;
 	for( const auto& i : v )
 		notify_type(ds, i);
+}
+
+template<typename DataStream, typename T>
+void get_notify_type(DataStream &ds, std::vector<T> &v, std::enable_if_t<!(std::is_same<T,char>::value || std::is_same<T,uint8_t>::value)>* = nullptr) {
+	uint8_t type;
+	uint32_t size;
+	ds >> type; check(type == ListType, "[Type error]: vector expect ListType");
+	ds >> size;
+	v.resize(size);
+	for (auto &elt: v) {
+		get_notify_type(ds, elt);
+	}
 }
 
 template<typename DataStream, typename T>
@@ -187,6 +241,18 @@ void notify_type(DataStream &ds,const std::list<T>& l) {
 }
 
 template<typename DataStream, typename T>
+void get_notify_type(DataStream &ds,std::list<T>& l) {
+	uint8_t type;
+	uint32_t size;
+	ds >> type; check(type == ListType, "[Type error]: list expect ListType");
+	ds >> size;
+	l.resize(size);
+
+	for( auto& elt : l )
+		get_notify_type(ds, elt);
+}
+
+template<typename DataStream, typename T>
 void notify_type(DataStream &ds,const std::deque<T>& q) {
 	uint8_t type = ListType;
 	uint32_t size = q.size();
@@ -194,6 +260,18 @@ void notify_type(DataStream &ds,const std::deque<T>& q) {
 	ds << size;
 	for( const auto& i : q )
 		notify_type(ds, i);
+}
+
+template<typename DataStream, typename T>
+void get_notify_type(DataStream &ds,std::deque<T>& q) {
+	uint8_t type;
+	uint32_t size;
+	ds >> type; check(type == ListType, "[Type error]: deque expect ListType");
+	ds >> size;
+	q.resize(size);
+
+	for( auto& elt : q )
+		get_notify_type(ds, elt);
 }
 
 template<typename DataStream, typename T1, typename T2>
@@ -206,6 +284,20 @@ void notify_type(DataStream &ds,const std::pair<T1, T2>& t) {
 	notify_type(ds, std::get<1>(t));
 }
 
+template<typename DataStream, typename T1, typename T2>
+void get_notify_type(DataStream &ds,std::pair<T1, T2>& t) {
+	uint8_t type;
+	uint32_t size;
+	ds >> type; check(type == ListType, "[Type error]: pair expect ListType");
+	ds >> size; check(size == 2, "[Size error]: pair can only have 2 elt");
+
+	T1 t1;
+	T2 t2;
+	get_notify_type(ds, t1);
+	get_notify_type(ds, t2);
+	t = std::pair<T1, T2>{t1, t2};
+}
+
 template<typename DataStream, typename T>
 void notify_type(DataStream &ds,const std::set<T>& t) {
 	uint8_t type = ListType;
@@ -214,6 +306,20 @@ void notify_type(DataStream &ds,const std::set<T>& t) {
 	ds << size;
 	for( const auto& i : t ) {
 		notify_type(ds, i);
+	}
+}
+
+template<typename DataStream, typename T>
+void get_notify_type(DataStream &ds,std::set<T>& s) {
+	uint8_t type;
+	uint32_t size;
+	ds >> type; check(type == ListType, "[Type error]: set expect ListType");
+	ds >> size;
+
+	for( uint32_t i = 0; i < size; ++i ) {
+		T v;
+		get_notify_type(ds, v);
+		s.emplace( std::move(v) );
 	}
 }
 
@@ -231,7 +337,6 @@ void notify_type( DataStream& ds, const T (&v)[N] ) {
 	   notify_type(ds, v[i]);
 }
 
-
 template<typename DataStream, typename T, std::size_t N>
 void notify_type( DataStream& ds, const std::array<T,N>& v ) {
 	uint8_t type = ListType;
@@ -243,34 +348,19 @@ void notify_type( DataStream& ds, const std::array<T,N>& v ) {
 	   notify_type(ds, i);
 }
 
-template<typename DataStream, typename T>
-void notify_type(DataStream &ds,const T &value ,std::enable_if_t<std::is_integral<T>::value>* = nullptr) {
-	uint8_t ttype = IntType;
-	int128_t tv = int128_t(value);
+template<typename DataStream, typename T, std::size_t N>
+void get_notify_type( DataStream& ds, std::array<T,N>& v ) {
+	uint8_t type;
+	uint32_t size;
+	ds >> type; check(type == ListType, "[Type error]: array expect ListType");
+	ds >> size; check(size == N, "[Size error]: array[N] size error");
 
-	ds << ttype;
-	ds << tv;
-}
 
-template<typename T>
-bool check_integer_overflow(const int128_t &value, T &com, std::enable_if_t<std::is_integral<T>::value>* = nullptr) {
-	if (value > std::numeric_limits<T>::max() || value < std::numeric_limits<T>::min()) {
-		return false;
+	for( uint32_t i = 0; i < N; ++i ) {
+		T x;
+		get_notify_type(ds, x);
+		v[i] = std::move(x);
 	}
-
-	return true;
-}
-
-template<typename DataStream, typename T>
-void get_notify_type(DataStream &ds, T &value ,std::enable_if_t<std::is_integral<T>::value>* = nullptr) {
-	static_assert(sizeof(T) <= sizeof(int128_t), "[use type error]: can only use max typesize int128_t");
-	uint8_t ttype = 0;
-	int128_t tv;
-	ds >> ttype;
-	check(ttype == IntType, "NeoInt type error");
-	ds >> tv;
-	check(check_integer_overflow(tv, value), "[interger overflow error]: should pass the bigger size type, like int128_t.");
-	value = (T)tv;
 }
 
 template<typename DataStream, typename T, std::enable_if_t<_datastream_detail::is_pointer<T>()>* = nullptr>
@@ -346,192 +436,6 @@ std::vector<char> pack_neoargs(Args&&... args) {
   return result;
 }
 
-/*
-struct NeoString {
-	std::string s;
-	template<typename DataStream>
-	friend DataStream& operator<<( DataStream& ds, const NeoString& v ) {
-		uint8_t type = StringType;
-		uint32_t size = v.s.size();
-		ds << type;
-		ds << size;
-		ds.write((char *)v.s.data(), v.s.size());
-		return ds;
-	}
-
-	template<typename DataStream>
-	friend DataStream& operator>>( DataStream& ds, NeoString& v ) {
-		uint8_t type;
-		uint32_t size;
-		ds >> type;
-		ds >> size;
-		check(type == StringType, "NeoString type error");
-		v.s.resize(size);
-		ds.read((char *) v.s.data(), v.s.size() );
-		return ds;
-	}
-};
-
-struct NeoByteArray :public std::vector<uint8_t> {
-	using vector::vector;
-
-	template<typename DataStream>
-	friend DataStream& operator<<( DataStream& ds, const NeoByteArray& v ) {
-		uint8_t type = ByteArrayType;
-		uint32_t size = v.size();
-		ds << type;
-		ds << size;
-		ds.write((char *)v.data(), v.size());
-		return ds;
-	}
-
-	template<typename DataStream>
-	friend DataStream& operator>>( DataStream& ds, NeoByteArray& v ) {
-		uint8_t type;
-		uint32_t size;
-		ds >> type;
-		ds >> size;
-		check(type == ByteArrayType, "NeoByteArray type error");
-		v.resize(size);
-		ds.read((char *) v.data(), v.size() );
-		return ds;
-	}
-};
-
-struct NeoAddress {
-	address value;
-
-	template<typename DataStream>
-	friend DataStream& operator<<( DataStream& ds, const NeoAddress& v ) {
-		uint8_t type = AddressType;
-		ds << type;
-		ds << v.value;
-		return ds;
-	}
-
-	template<typename DataStream>
-	friend DataStream& operator>>( DataStream& ds, NeoAddress& v ) {
-		uint8_t type;
-		ds >> type;
-		ds >> v.value;
-		check(type == AddressType, "NeoAddress type error");
-		return ds;
-	}
-};
-
-struct NeoBoolean {
-	bool value;
-
-	template<typename DataStream>
-	friend DataStream& operator<<( DataStream& ds, const NeoBoolean& v ) {
-		uint8_t type = BooleanType;
-		ds << type;
-		ds << v.value;
-		return ds;
-	}
-
-	template<typename DataStream>
-	friend DataStream& operator>>( DataStream& ds, NeoBoolean& v ) {
-		uint8_t type;
-		ds >> type;
-		ds >> v.value;
-		check(type == BooleanType, "NeoBoolean type error");
-		return ds;
-	}
-};
-
-
-template<typename type>
-struct NeoInt {
-	type value;
-	
-	template<typename DataStream>
-	friend DataStream& operator<<( DataStream& ds, const NeoInt<type>& v ) {
-		uint8_t ttype = IntType;
-		int128_t tv = int128_t(v.value);
-
-		ds << ttype;
-		ds << tv;
-
-		return ds;
-	}
-
-	template<typename DataStream>
-	friend DataStream& operator>>( DataStream& ds, NeoInt<type>& v ) {
-		uint8_t ttype;
-		int128_t tv;
-		ds >> ttype;
-		ds >> tv;
-		check(ttype == IntType, "NeoInt type error");
-		v.value = tv;
-		return ds;
-	}
-};
-
-struct NeoH256 {
-	H256 value;
-	string tohexstring(void) const {
-		string s;
-		s.resize(64);
-		int index = 0;
-		for(auto it = value.begin(); it != value.end(); it++) {
-			uint8_t high = *it/16, low = *it%16;
-			s[index] = (high<10) ? ('0' + high) : ('a' + high - 10);
-			s[index + 1] = (low<10) ? ('0' + low) : ('a' + low - 10);
-			index += 2;
-		}
-		return s;
-	}
-
-	void debugout(void) {
-		for(auto it = value.begin(); it != value.end(); it++) {
-			printf("%02x", *it);
-		}
-		printf("\n");
-	}
-
-	template<typename DataStream>
-	friend DataStream& operator<<( DataStream& ds, const NeoH256& v ) {
-		uint8_t type = H256Type;
-		ds << type;
-		return ds << v.value;
-	}
-
-	template<typename DataStream>
-	friend DataStream& operator>>( DataStream& ds, NeoH256& v ) {
-		uint8_t type;
-		uint32_t size;
-		ds >> type;
-		check(type == H256Type, "H256Type wrong");
-		return ds >> v.value;
-	}
-};
-
-template<typename... Args>
-struct NeoList {
-	std::tuple<std::decay_t<Args>...> value;
-
-	template<typename DataStream>
-	friend DataStream& operator<<( DataStream& ds, const NeoList& v ) {
-		uint8_t type = ListType;
-		uint32_t size = sizeof...(Args);
-		ds << type;
-		ds << size;
-		return ds << v.value;
-	}
-
-	template<typename DataStream>
-	friend DataStream& operator>>( DataStream& ds, NeoList& v ) {
-		uint8_t type;
-		uint32_t size;
-		ds >> type;
-		ds >> size;
-		check(type == ListType, "NeoList type error");
-		check(size == sizeof...(Args), "NeoList size error");
-		return ds >> v.value;
-	}
-};
-*/
 }
 
 

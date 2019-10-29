@@ -12,7 +12,6 @@
 
 - [Codestype](#Codestype)
 
-- [Example](#Example)
 
 
 #### BlockChainApi
@@ -25,7 +24,9 @@
 | check_witness     | address                                                      | bool    |
 | current_blockhash | void                                                         | H256    |
 | current_txhash    | void                                                         | H256    |
-| notify            | string                                                       | void    |
+| time_stamp        | void                                                         | uint64  |
+| block_height      | void                                                         | uint32  |
+| notify_event      | args...                                                      | void    |
 | call_contract     | 1. address<br />2. vector<char><br />3. any type, save the return result of calling contract | void    |
 | contract_migrage  | 1. vector<char> code<br />2. uint32 vmtype<br />3. string name <br />4. string version<br />5. string autoher<br />6. string email <br />7. string description | address |
 | storage_get       | 1. key: acctullay is vector<char><br />2. any type obj contranct have stored. | bool    |
@@ -112,17 +113,17 @@ auto v = pack(tfsm);
 | structure | method                                           | description                                                  |
 | --------- | ------------------------------------------------ | ------------------------------------------------------------ |
 | address   | void debugout(void)<br />string tohextring(void) | address is acctually fixed len of bytes[20].  std::array<uint8, 20>. and support == and != operation. |
-| asset     | NA                                               | asset is acctuallly int64 with scope [-1<<62 - 1, 1<<62-1]. and support overflow check. you can do arithmatic like normal int64 like +-*/ and arith compare. |
+| asset     | NA                                               | asset is acctuallly int128 with scope [-1<<126 - 1, 1<<126-1]. and support overflow check. you can do arithmatic like normal int64 like +-*/ and arith compare. |
 | key       | NA                                               | key is typedef of std::vector<char>                          |
 | H160      | NA                                               | H160 is typefdef of std::array<uint8, 20>                    |
 | H256      | NA                                               | typedef of std::array<uint8, 32>                             |
 
 #### Library_Support.
 
-​	currently, ontology wasm cdt support libc/libc++/base58/crypto/.  so you can coding include this library like tranditionl way. the  most import maybe the libc++'s std. like map, list, vecotr, array etc. and when you compile failed with function not find at the link step. may be you can add lib like blow.  and the libc/libc++ already added auto.
+​	currently, ontology wasm cdt support libc/libc++/base58/builtins.  so you can coding include this library like tranditionl way. the  most import maybe the libc++'s std. like map, list, vecotr, array etc. and when you compile failed with function not find at the link step. may be you can add lib like blow.  and the libc/libc++ already added auto.
 
 ```
-ont_cpp yourfile.cpp -lbase58 -lcyrpto -lbuiltins
+ont_cpp yourfile.cpp
 ```
 
 #### Codestype
@@ -147,14 +148,4 @@ ONTIO_DISPATCH(hello, (myhello))
 ```
 
 ​	include ontio.hpp first. this include most of the include file include std. so if you want vector. just declare with using std::vector is ok.  class hello is your contract name. myhello is the interface support. any intferface expose to user must add to ONTIO_DISPATCH(contract_name, (intferface0), (intferface1, (intferface2), ....)
-
-#### Example
-
-[oep4](testnet/oep4.cpp)
-
-[oep5](testnet/oep5.cpp)
-
-[oep7](testnet/oep7.cpp)
-
-[hello](hello.cpp)
 
