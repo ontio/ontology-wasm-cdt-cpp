@@ -15,8 +15,32 @@ enum {
 	ListType  = 0x10
 };
 
-template<typename DataStream, typename T>
-void notify_type(DataStream &ds,const T &value ,std::enable_if_t<std::is_integral<T>::value>* = nullptr) {
+template<typename T, std::enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value>* = nullptr>
+T integer_from_littlesbytes(const uint8_t* bytes, size_t size) {
+	T retval;
+	check(size > 0 && size <= sizeof(T), "[Size error]: integer size error. pass a larger size integer result. like the int128_t(the max)");
+	if (bytes[size - 1] >> 7) {
+		retval = -1;
+	} else {
+		retval = 0;
+	}
+	memcpy((void *)&retval, (void *)bytes, size);
+
+	return retval;
+}
+
+template<typename T, std::enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value>* = nullptr>
+T integer_from_littlesbytes(const uint8_t* bytes, size_t size) {
+	T retval = 0;
+	check(size > 0 && size <= sizeof(T), "[Size error]: integer size error. pass a larger size integer result. like the int128_t(the max)");
+	check(bytes[size - 1]>> 7 == 0, "[Signed error]: can not read negtive value read into a unsigned type");
+	memcpy((void *)&retval, (void *)bytes, size);
+
+	return retval;
+}
+
+template<typename DataStream, typename T, std::enable_if_t<std::is_integral<T>::value>* = nullptr>
+void notify_type(DataStream &ds,const T &value) {
 	uint8_t ttype = IntType;
 	int128_t tv = int128_t(value);
 
@@ -24,8 +48,8 @@ void notify_type(DataStream &ds,const T &value ,std::enable_if_t<std::is_integra
 	ds << tv;
 }
 
-template<typename T>
-bool check_integer_overflow(const int128_t &value, T &com, std::enable_if_t<std::is_integral<T>::value>* = nullptr) {
+template<typename T, std::enable_if_t<std::is_integral<T>::value>* = nullptr>
+bool check_integer_overflow(const int128_t &value, T &com) {
 	if (value > std::numeric_limits<T>::max() || value < std::numeric_limits<T>::min()) {
 		return false;
 	}
@@ -33,16 +57,26 @@ bool check_integer_overflow(const int128_t &value, T &com, std::enable_if_t<std:
 	return true;
 }
 
-template<typename DataStream, typename T>
-void get_notify_type(DataStream &ds, T &value ,std::enable_if_t<std::is_integral<T>::value>* = nullptr) {
+template<typename DataStream, typename T, std::enable_if_t<std::is_integral<T>::value>* = nullptr>
+void get_notify_type(DataStream &ds, T &value) {
 	static_assert(sizeof(T) <= sizeof(int128_t), "[use type error]: can only use max typesize int128_t");
 	uint8_t ttype = 0;
 	int128_t tv;
 	ds >> ttype;
-	check(ttype == IntType, "NeoInt type error");
-	ds >> tv;
-	check(check_integer_overflow(tv, value), "[interger overflow error]: should pass the bigger size type, like int128_t.");
-	value = (T)tv;
+	if (ttype == IntType) {
+		ds >> tv;
+		check(check_integer_overflow(tv, value), "[interger overflow error]: should pass the bigger size type, like int128_t.");
+		value = (T)tv;
+	}  else if (ttype == ByteArrayType) {
+		std::vector<char> tmp;
+		uint32_t size = 0;
+		ds >> size;
+		tmp.resize(size);
+		ds.read((char *)tmp.data(), tmp.size());
+		value = integer_from_littlesbytes<T>((uint8_t*)tmp.data(), tmp.size());
+	} else {
+		check(false, "[Type error]: integer expect IntType or ByteArrayType");
+	}
 }
 
 template<typename DataStream>
@@ -164,8 +198,35 @@ void notify_type(DataStream &ds, const bool &v) {
 template<typename DataStream>
 void get_notify_type(DataStream &ds, bool &v) {
 	uint8_t type = 0xff;
-	ds >> type; check(type == BooleanType, "[Type error]: bool expect BooleanType");
-	ds >> v;
+	ds >> type;
+	if (type == BooleanType)
+		ds >> v;
+	else if (type == ByteArrayType) {
+		uint8_t tmp = 0xff;
+		uint32_t size = 0;
+		ds >> size;
+		check(size == 1, "[Size error]: bool expect only one byte");
+		ds >> tmp;
+		if (tmp == 0) {
+			v = false;
+		} else if (tmp == 1) {
+			v = true;
+		} else {
+			check(false, "[Value error]: bool expect ByteArrayType 1 or 0");
+		}
+	} else if (type == IntType) {
+		int128_t tv;
+		ds >> tv;
+		if (tv == 0) {
+			v = false;	
+		} else if (tv == 1) {
+			v = true;
+		} else {
+			check(false, "[Value error]: bool expect IntType 1 or 0");
+		}
+	} else {
+		 check(false, "[Type error]: bool expect BooleanType/ByteArrayType/IntType");
+	}
 }
 
 template<typename DataStream>
@@ -218,8 +279,8 @@ void notify_type(DataStream &ds,const std::vector<T>& v) {
 		notify_type(ds, i);
 }
 
-template<typename DataStream, typename T>
-void get_notify_type(DataStream &ds, std::vector<T> &v, std::enable_if_t<!(std::is_same<T,char>::value || std::is_same<T,uint8_t>::value)>* = nullptr) {
+template<typename DataStream, typename T, std::enable_if_t<!(std::is_same<T,char>::value || std::is_same<T,uint8_t>::value)>* = nullptr>
+void get_notify_type(DataStream &ds, std::vector<T> &v) {
 	uint8_t type;
 	uint32_t size;
 	ds >> type; check(type == ListType, "[Type error]: vector expect ListType");
