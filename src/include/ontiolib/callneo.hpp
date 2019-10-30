@@ -18,7 +18,11 @@ enum {
 template<typename T, std::enable_if_t<std::is_integral<T>::value && std::is_signed<T>::value>* = nullptr>
 T integer_from_littlesbytes(const uint8_t* bytes, size_t size) {
 	T retval;
-	check(size > 0 && size <= sizeof(T), "[Size error]: integer size error. pass a larger size integer result. like the int128_t(the max)");
+
+	if (size == 0)
+		return 0;
+
+	check(size <= sizeof(T), "[Signed Size error]: integer size error. pass a larger size integer result. like the int128_t(the max)");
 	if (bytes[size - 1] >> 7) {
 		retval = -1;
 	} else {
@@ -32,7 +36,11 @@ T integer_from_littlesbytes(const uint8_t* bytes, size_t size) {
 template<typename T, std::enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value>* = nullptr>
 T integer_from_littlesbytes(const uint8_t* bytes, size_t size) {
 	T retval = 0;
-	check(size > 0 && size <= sizeof(T), "[Size error]: integer size error. pass a larger size integer result. like the int128_t(the max)");
+
+	if (size == 0)
+		return 0;
+
+	check(size <= sizeof(T), "[Unsigned Size error]: integer size error. pass a larger size integer result. like the int128_t(the max)");
 	check(bytes[size - 1]>> 7 == 0, "[Signed error]: can not read negtive value read into a unsigned type");
 	memcpy((void *)&retval, (void *)bytes, size);
 
@@ -71,9 +79,14 @@ void get_notify_type(DataStream &ds, T &value) {
 		std::vector<char> tmp;
 		uint32_t size = 0;
 		ds >> size;
-		tmp.resize(size);
-		ds.read((char *)tmp.data(), tmp.size());
-		value = integer_from_littlesbytes<T>((uint8_t*)tmp.data(), tmp.size());
+
+		if (size == 0) {
+			value = 0;
+		} else {
+			tmp.resize(size);
+			ds.read((char *)tmp.data(), tmp.size());
+			value = integer_from_littlesbytes<T>((uint8_t*)tmp.data(), tmp.size());
+		}
 	} else {
 		check(false, "[Type error]: integer expect IntType or ByteArrayType");
 	}
