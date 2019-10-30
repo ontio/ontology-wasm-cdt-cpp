@@ -24,7 +24,7 @@
 | check_witness     | address                                                      | bool    |
 | current_blockhash | void                                                         | H256    |
 | current_txhash    | void                                                         | H256    |
-| time_stamp        | void                                                         | uint64  |
+| timestamp        | void                                                         | uint64  |
 | block_height      | void                                                         | uint32  |
 | notify_event      | args...                                                      | void    |
 | call_contract     | 1. address<br />2. vector<char><br />3. any type, save the return result of calling contract | void    |

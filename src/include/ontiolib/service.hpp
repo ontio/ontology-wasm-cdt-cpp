@@ -165,7 +165,7 @@ uint32_t block_height(void) {
 	return ::ontio_block_height();
 }
 
-uint64_t time_stamp(void) {
+uint64_t timestamp(void) {
 	return ::ontio_timestamp();
 }
 
